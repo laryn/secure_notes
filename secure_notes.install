@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * @file
+ */
+
+/**
+ *
+ */
+function secure_notes_schema() {
+  $schema = array();
+  return $schema;
+}
+
+/**
+ *
+ */
+function secure_notes_install() {
+  module_load_include('inc', 'node', 'content_types');
+
+  $type = array(
+    'type' => 'secure_note',
+    'name' => st('Secure Note'),
+    'base' => 'node_content',
+    'description' => st('Content meant to be a secure exchange between a user of the site and a non-user of the site.'),
+    'custom' => TRUE,
+    'locked' => FALSE,
+  );
+
+  $type = node_type_set_defaults($type);
+  node_type_save($type);
+  node_add_body_field($type);
+}
