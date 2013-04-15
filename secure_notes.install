@@ -9,6 +9,59 @@
  */
 function secure_notes_schema() {
   $schema = array();
+  $schema['secure_notes_create'] = array(
+    'description' => 'Stores access tokens and node types for secure note creation.',
+    'fields' => array(
+      'token'  => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Token for access to node creation.',
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'The type of node that will be created.',
+      ),
+      'expires' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'The Unix timestamp after which this invitation will expire.',
+      ),
+    ),
+    'primary key' => array('token'),
+    'indexes' => array(
+      'expires'    => array('expires'),
+    ),
+  );
+
+  $schema['secure_notes_invite'] = array(
+    'description' => 'Stores access tokens and node types for secure note viewing.',
+    'fields' => array(
+      'token'  => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Token for access to node creation.',
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'The {node}.nid of node that will be viewed.',
+      ),
+      'expires' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'The Unix timestamp after which this invitation will expire.',
+      ),
+    ),
+    'primary key' => array('token'),
+    'indexes' => array(
+      'nid' => array('nid'),
+      'expires'    => array('expires'),
+    ),
+  );
   return $schema;
 }
 
