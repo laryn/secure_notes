@@ -2,5 +2,41 @@
 
 /**
  * @file
+ * TODO
  */
 
+/**
+ * TODO
+ */
+function secure_notes_node_access($node, $op, $account) {
+  $access = NODE_ACCESS_IGNORE;
+  switch ($op) {
+    case 'create':
+      if (secure_notes_create_token_valid()) {
+        $access = NODE_ACCESS_ALLOW;
+      }
+      break;
+
+    case 'view':
+      if (secure_notes_view_token_valid($node->nid)) {
+        $access = NODE_ACCESS_ALLOW;
+      }
+      break;
+  }
+  return $access;
+}
+
+/**
+ * TODO
+ */
+function secure_notes_create_token_valid() {
+  return FALSE;
+}
+
+
+/**
+ * TODO
+ */
+function secure_notes_view_token_valid($nid) {
+  return FALSE;
+}
