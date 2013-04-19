@@ -10,18 +10,20 @@
  */
 function secure_notes_node_access($node, $op, $account) {
   $access = NODE_ACCESS_IGNORE;
-  switch ($op) {
-    case 'create':
-      if (secure_notes_create_token_valid()) {
-        $access = NODE_ACCESS_ALLOW;
-      }
-      break;
+  if (isset($_GET['secure-note-token'])) {
+    switch ($op) {
+      case 'create':
+        if (secure_notes_create_token_valid($_GET['secure-note-token'], $node)) {
+          $access = NODE_ACCESS_ALLOW;
+        }
+        break;
 
-    case 'view':
-      if (secure_notes_view_token_valid($node->nid)) {
-        $access = NODE_ACCESS_ALLOW;
-      }
-      break;
+      case 'view':
+        if (secure_notes_view_token_valid($GET['secure-note-token'], $node->nid)) {
+          $access = NODE_ACCESS_ALLOW;
+        }
+        break;
+    }
   }
   return $access;
 }
@@ -29,7 +31,12 @@ function secure_notes_node_access($node, $op, $account) {
 /**
  * TODO
  */
-function secure_notes_create_token_valid() {
+function secure_notes_create_token_valid($token, $node) {
+  $allowed_types = variable_get('secure_notes_allowed_types', array());
+  // TODO just a stub now.
+  if ($node == 'secure_note') {
+    return TRUE;
+  }
   return FALSE;
 }
 
@@ -37,6 +44,6 @@ function secure_notes_create_token_valid() {
 /**
  * TODO
  */
-function secure_notes_view_token_valid($nid) {
+function secure_notes_view_token_valid($token, $nid) {
   return FALSE;
 }
