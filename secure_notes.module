@@ -6,6 +6,22 @@
  */
 
 /**
+ * Implements hook_menu().
+ */
+function secure_notes_menu() {
+  $items = array();
+  $items['admin/config/content/secure-notes'] = array(
+    'title' => 'Secure Notes Settings',
+    'description' => 'Administer Secure Notes Settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('secure_notes_admin_settings_form'),
+    'access arguments' => array('manage secure notes settings'),
+    'file' => 'secure_notes.admin.inc',
+  );
+  return $items;
+}
+
+/**
  * TODO
  */
 function secure_notes_node_access($node, $op, $account) {
