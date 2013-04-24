@@ -26,9 +26,10 @@ function secure_notes_menu() {
  */
 function secure_notes_node_access($node, $op, $account) {
   $access = NODE_ACCESS_IGNORE;
-  if (isset($_GET['secure-note-token'])) {
+  if (!empty($_GET['secure-note-token'])) {
     switch ($op) {
       case 'create':
+        // In the create case $node is a string representing the node type.
         if (secure_notes_create_token_valid($_GET['secure-note-token'], $node)) {
           $access = NODE_ACCESS_ALLOW;
         }
@@ -47,19 +48,31 @@ function secure_notes_node_access($node, $op, $account) {
 /**
  * TODO
  */
-function secure_notes_create_token_valid($token, $node) {
-  $allowed_types = variable_get('secure_notes_allowed_types', array());
-  // TODO just a stub now.
-  if ($node == 'secure_note') {
-    return TRUE;
+function secure_notes_create_token_valid($token, $node_type) {
+  $allowed_types = secure_notes_get_allowed_types();
+  $expires = 0;
+  if (!empty($allowed_types[$node_type])) {
+    $expires = (int) db_select('secure_notes_create', 'snc')
+      ->fields('snc', array('expires'))
+      ->condition('token', $token, '=')
+      ->condition('type', $node_type, '=')
+      ->execute()
+      ->fetchField();
   }
-  return FALSE;
+  return $expires > REQUEST_TIME;
 }
-
 
 /**
  * TODO
  */
 function secure_notes_view_token_valid($token, $nid) {
   return FALSE;
+}
+
+/**
+ * TODO
+ */
+function secure_notes_get_allowed_types() {
+  $default = in_array('secure_note', array_keys(node_type_get_names())) ? array('secure_note' => 'secure_note') : array();
+  return variable_get('secure_notes_allowed_types', $default);
 }
