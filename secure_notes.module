@@ -36,7 +36,7 @@ function secure_notes_node_access($node, $op, $account) {
         break;
 
       case 'view':
-        if (secure_notes_view_token_valid($GET['secure-note-token'], $node->nid)) {
+        if (secure_notes_view_token_valid($_GET['secure-note-token'], $node->nid)) {
           $access = NODE_ACCESS_ALLOW;
         }
         break;
