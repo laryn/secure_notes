@@ -18,47 +18,28 @@ function secure_notes_menu() {
     'access arguments' => array('manage secure notes settings'),
     'file' => 'secure_notes.admin.inc',
   );
+  $items['secure-notes/add/%'] = array(
+    'title' => 'Create Secure Note',
+    'description' => 'Create a secure note',
+    'page callback' => 'secure_notes_render_add_form',
+    'page arguments' => array(2),
+    'access callback' => 'secure_notes_create_token_valid',
+    'access arguments' => array(2),
+    'file' => 'secure_notes.admin.inc',
+  );
+
   return $items;
 }
 
 /**
  * TODO
  */
-function secure_notes_node_access($node, $op, $account) {
-  $access = NODE_ACCESS_IGNORE;
-  if (!empty($_GET['secure-note-token'])) {
-    switch ($op) {
-      case 'create':
-        // In the create case $node is a string representing the node type.
-        if (secure_notes_create_token_valid($_GET['secure-note-token'], $node)) {
-          $access = NODE_ACCESS_ALLOW;
-        }
-        break;
-
-      case 'view':
-        if (secure_notes_view_token_valid($_GET['secure-note-token'], $node->nid)) {
-          $access = NODE_ACCESS_ALLOW;
-        }
-        break;
-    }
-  }
-  return $access;
-}
-
-/**
- * TODO
- */
-function secure_notes_create_token_valid($token, $node_type) {
-  $allowed_types = secure_notes_get_allowed_types();
-  $expires = 0;
-  if (!empty($allowed_types[$node_type])) {
-    $expires = (int) db_select('secure_notes_create', 'snc')
-      ->fields('snc', array('expires'))
-      ->condition('token', $token, '=')
-      ->condition('type', $node_type, '=')
-      ->execute()
-      ->fetchField();
-  }
+function secure_notes_create_token_valid($token) {
+  $expires = (int) db_select('secure_notes_create', 'snc')
+    ->fields('snc', array('expires'))
+    ->condition('token', $token, '=')
+    ->execute()
+    ->fetchField();
   return $expires > REQUEST_TIME;
 }
 
@@ -75,4 +56,22 @@ function secure_notes_view_token_valid($token, $nid) {
 function secure_notes_get_allowed_types() {
   $default = in_array('secure_note', array_keys(node_type_get_names())) ? array('secure_note' => 'secure_note') : array();
   return variable_get('secure_notes_allowed_types', $default);
+}
+
+/**
+ * TODO
+ */
+function secure_notes_render_add_form($token) {
+  $type = db_select('secure_notes_create', 'snc')
+    ->fields('snc', array('type'))
+    ->condition('token', $token, '=')
+    ->execute()
+    ->fetchField();
+  if (!$type) {
+    drupal_access_denied();
+  }
+  module_load_include('inc', 'node', 'node.pages');
+  $form = node_add($type);
+  $output = drupal_render($form);
+  return $output;
 }
