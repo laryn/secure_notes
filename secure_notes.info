@@ -2,3 +2,4 @@ name = Secure Notes
 description = Allow for non-users to safely share a secret with you.
 core = 7.x
 package = other
+configure = admin/config/content/secure-notes
