@@ -27,7 +27,24 @@ function secure_notes_menu() {
     'access arguments' => array(2),
     'file' => 'secure_notes.admin.inc',
   );
-
+  /*
+  $items['admin/content/secure-notes/generate-link'] = array(
+    'title' => t('Generate Secure Note Link'),
+    'description' => t('Generate a one time use link for the creation of a note.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('secure_notes_generate_link'),
+    'access arguments' => array('generate secure notes links'),
+    'file' => 'secure_notes.pages.inc',
+  );
+  $items['admin/content/secure-notes/email'] = array(
+    'title' => t('Send Secure Note Email'),
+    'description' => t('Generate a one time use link for the creation of a note.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('secure_notes_generate_link'),
+    'access arguments' => array('generate secure notes links'),
+    'file' => 'secure_notes.pages.inc',
+  );
+  */
   return $items;
 }
 
@@ -35,12 +52,13 @@ function secure_notes_menu() {
  * TODO
  */
 function secure_notes_create_token_valid($token) {
-  $expires = (int) db_select('secure_notes_create', 'snc')
-    ->fields('snc', array('expires'))
+  $result = db_select('secure_notes_create', 'snc')
+    ->fields('snc', array('expires', 'type'))
     ->condition('token', $token, '=')
     ->execute()
-    ->fetchField();
-  return $expires > REQUEST_TIME;
+    ->fetchObject();
+  return (int) $result->expires > REQUEST_TIME && secure_notes_type_allowed($result->type);
+
 }
 
 /**
@@ -61,6 +79,15 @@ function secure_notes_get_allowed_types() {
 /**
  * TODO
  */
+function secure_notes_type_allowed($type) {
+  $default = in_array('secure_note', array_keys(node_type_get_names())) ? array('secure_note' => 'secure_note') : array();
+  $allowed = variable_get('secure_notes_allowed_types', $default);
+  return in_array($type, $allowed);
+}
+
+/**
+ * TODO
+ */
 function secure_notes_render_add_form($token) {
   $type = db_select('secure_notes_create', 'snc')
     ->fields('snc', array('type'))
@@ -73,5 +100,33 @@ function secure_notes_render_add_form($token) {
   module_load_include('inc', 'node', 'node.pages');
   $form = node_add($type);
   $output = drupal_render($form);
+  return $output;
+}
+
+function secure_notes_node_form_submit($form, &$form_state) {
+  // TODO make this a real redirect.
+  $form_state['redirect'] = 'node/14';
+}
+
+function secure_notes_form_node_form_alter(&$form, &$form_state) {
+  $menu = menu_get_item();
+  if ($menu['path'] == 'secure-notes/add/%') {
+    $form['actions']['submit']['#submit'][] = 'secure_notes_node_form_submit';
+  }
+}
+
+/*
+ * Implementation of hook_help()
+ */
+function secure_notes_help($path, $arg) {
+  $output = '';
+  switch ($path) {
+    case 'admin/help#secure-notes':
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Secure notes module was designed to solve the problem of transfering sensitive data between people. While there are many good solutons for this (PGP, SSH, TrueCrypt, etc) it is often the case that one or more of the parties are non-technical or unable to install new software. In this case, it is possible to allow transfer of this data by storing it in Drupal.') . '</p>';
+      $output .= '<h3>' . t('Uses') . '</h3>';
+      $output .= '<p>' . t('Secure notes allows any content type to be made into a secure drop point. To authorize a user to create a secure not, generate a token and email it to them. This is very similar to the way users can reset a password. The one time link will allow them to create a node even though they do not have access to the site in any other way.') . '</p>';
+      $output .= '<p>' . t('If you need to send a secure not to someone, generate a similar one-time use access link and they can then view a specified piece of content, once and only once.') . '</p>';
+  }
   return $output;
 }
