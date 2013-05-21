@@ -66,7 +66,7 @@ function secure_notes_create_token_valid($token) {
     ->condition('token', $token, '=')
     ->execute()
     ->fetchObject();
-  return (int) $result->expires > REQUEST_TIME && secure_notes_type_allowed($result->type);
+  return $result && (int) $result->expires > REQUEST_TIME && secure_notes_type_allowed($result->type);
 }
 
 /**
