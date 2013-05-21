@@ -73,6 +73,12 @@ function secure_notes_create_token_valid($token) {
  * TODO
  */
 function secure_notes_view_token_valid($token) {
+  $result = db_select('secure_notes_view', 'snv')
+    ->fields('snv', array('expires'))
+    ->condition('token', $token, '=')
+    ->execute()
+    ->fetchObject();
+  return $result && (int) $result->expires > REQUEST_TIME;
   return TRUE;
   return FALSE;
 }
