@@ -23,9 +23,9 @@ function secure_notes_menu() {
     'description' => 'Create a secure note',
     'page callback' => 'secure_notes_render_add_form',
     'page arguments' => array(2),
-    'access callback' => 'secure_notes_create_token_valid',
+    'access callback' => 'secure_notes_add_token_valid',
     'access arguments' => array(2),
-    #'file' => 'secure_notes.admin.inc',
+    #'file' => 'secure_notes.pages.inc',
   );
   $items['secure-notes/view/%'] = array(
     'title' => 'View Secure Note',
@@ -34,17 +34,17 @@ function secure_notes_menu() {
     'page arguments' => array(2),
     'access callback' => 'secure_notes_view_token_valid',
     'access arguments' => array(2),
-    #'file' => 'secure_notes.admin.inc',
+    #'file' => 'secure_notes.pages.inc',
   );
-  /*
-  $items['admin/content/secure-notes/generate-link'] = array(
-    'title' => t('Generate Secure Note Link'),
+  $items['admin/content/secure-notes/invite/add'] = array(
+    'title' => t('Generate Secure Note Add Link'),
     'description' => t('Generate a one time use link for the creation of a note.'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('secure_notes_generate_link'),
-    'access arguments' => array('generate secure notes links'),
-    'file' => 'secure_notes.pages.inc',
+    'page arguments' => array('secure_notes_invite_add_link'),
+    'access arguments' => array('secure notes invite add'),
+    #'file' => 'secure_notes.pages.inc',
   );
+  /*
   $items['admin/content/secure-notes/email'] = array(
     'title' => t('Send Secure Note Email'),
     'description' => t('Generate a one time use link for the creation of a note.'),
@@ -58,9 +58,99 @@ function secure_notes_menu() {
 }
 
 /**
+ * Implements hook_permission().
+ */
+function secure_notes_permission() {
+  return array(
+    'secure notes invite add' => array(
+      'description' => t('Create link invitations to allow the creation of new secure notes.'),
+      'title' => t('Generate secure note add invitations'),
+      'restrict access' => TRUE,
+    ),
+    'secure notes invite view' => array(
+      'description' => t('Create link invitations to allow the viewing of secure notes.'),
+      'title' => t('Generate secure note view invitations'),
+      'restrict access' => TRUE,
+    ),
+    'view secure notes' => array(
+      'title' => t('View secure notes'),
+      'description' => t('Secure notes need to be private to be secure. Allows access to secure note content.'),
+      'restrict access' => TRUE,
+    ),
+  );
+}
+
+/**
  * TODO
  */
-function secure_notes_create_token_valid($token) {
+function secure_notes_invite_add_link($form, &$form_state) {
+  $token = isset($form_state['token']) ? 'Secure Note Link: ' . $form_state['token'] : '';
+  $options = secure_notes_get_allowed_types();
+  $types = node_type_get_names();
+  foreach ($options as $key => $value) {
+    $options[$key] = $types[$key];
+  }
+
+  $form = array();
+
+  $form['types'] = array(
+    '#title' => t('Node Type'),
+    '#description' => t('What type of node is the user being invited to create?'),
+    '#type' => 'select',
+    '#options' => $options,
+  );
+
+  $form['email'] = array(
+    '#title' => t('Email'),
+    '#description' => t('The email address of the person that will create the note.'),
+    '#type' => 'textfield',
+  );
+
+  $form['token'] = array(
+    '#type' => 'markup',
+    '#markup' => $token,
+    '#prefix' => '<div id="token"><h2>',
+    '#suffix' => '</h2></div>',
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Generate Link',
+    '#ajax' => array(
+      'callback' => 'secure_notes_ajax_add_token_submit',
+      'wrapper' => 'token',
+    ),
+    '#submit' => array('secure_notes_add_token_submit'),
+  );
+
+  return $form;
+}
+
+/**
+ * TODO
+ */
+function secure_notes_add_token_submit($form, &$form_state) {
+  // TODO FIX ME
+  $token = 'AAABBBCCCDDD';
+  //Make it nice and readable
+  $form_state['token'] = $token;
+  $form_state['rebuild'] = TRUE;
+  drupal_set_message(t('A secure note creation token has been generated and stored. It will expire in TK hours.'));
+}
+
+/**
+ * Submit handler for token creation.
+ */
+function secure_notes_ajax_add_token_submit($form, &$form_state) {
+  $element = $form['token'];
+  $element['#markup'] = 'Token: ' . $form_state['token'];
+  return $element;
+}
+
+/**
+ * TODO
+ */
+function secure_notes_add_token_valid($token) {
   $result = db_select('secure_notes_create', 'snc')
     ->fields('snc', array('expires', 'type'))
     ->condition('token', $token, '=')
