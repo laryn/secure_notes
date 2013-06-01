@@ -186,3 +186,19 @@ function secure_notes_node_view($node, $view_mode, $langcode) {
     }
   }
 }
+
+/**
+ * Implements hook_exit().
+ */
+function secure_notes_exit() {
+  //drupal_bootstrap(DRUPAL_BOOTSTRAP_VARIABLES);
+  if (arg(0) == 'secure-notes' && arg(1) == 'view' && (arg(2))) {
+    // Clean up view tokens on exit. It would be nice to do this on viewing but
+    // the menu system continues to check after the node is loaded which
+    // generating messages that are misleading.
+    $token = arg(2);
+    db_delete('secure_notes_view')
+      ->condition('token', $token, '=')
+      ->execute();
+  }
+}
