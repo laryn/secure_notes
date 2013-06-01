@@ -44,6 +44,16 @@ function secure_notes_menu() {
     'access arguments' => array('secure notes invite add'),
     'file' => 'secure_notes.pages.inc',
   );
+  $items['node/%/secure-notes/invite'] = array(
+    'title' => t('Secure Note Invitation'),
+    'type' => MENU_LOCAL_TASK,
+    'description' => t('Generate a one time use link that can be used to view this node.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('secure_notes_view_link_invite'),
+    'access callback' => 'secure_notes_node_invite_access',
+    'access arguments' => array(1, 'secure notes invite view'),
+    'file' => 'secure_notes.pages.inc',
+  );
   /*
   $items['admin/content/secure-notes/email'] = array(
     'title' => t('Send Secure Note Email'),
@@ -129,6 +139,22 @@ function secure_notes_view_token_valid($token) {
 }
 
 /**
+ *TODO
+ */
+function secure_notes_node_invite_access($nid, $perm) {
+  global $user;
+  // Only provide a link if the user has access and the node is a secure note
+  // type.
+  if (user_access($perm, $user)) {
+    $node = node_load($nid);
+    if (secure_notes_type_allowed($node->type)) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
  * TODO
  */
 function secure_notes_type_allowed($type) {
@@ -150,10 +176,10 @@ function secure_notes_get_allowed_types() {
 function secure_notes_node_view($node, $view_mode, $langcode) {
   global $user;
   $allowed = secure_notes_get_allowed_types();
+  // Deny normal access to secure notes.
   if (in_array($node->type, $allowed)) {
     if (!user_access('secure notes node view', $user)) {
       drupal_access_denied();
     }
   }
 }
-
