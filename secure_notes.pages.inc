@@ -66,6 +66,8 @@ function secure_notes_add_token_submit($form, &$form_state) {
   $form_state['token'] = $token;
   $form_state['rebuild'] = TRUE;
   $expires = REQUEST_TIME + variable_get('secure_notes_default_expiration', 48) * 60 *60;
+  try {
+  
   db_insert('secure_notes_create')
     ->fields(array(
       'token' => $token,  
@@ -73,6 +75,17 @@ function secure_notes_add_token_submit($form, &$form_state) {
       'type' => $form_state['values']['type'],
       'email' => $form_state['values']['email'],
     ))->execute();
+  }
+  catch (PDOException $e) {
+    if ($e->errorInfo[1] != 1062) {
+      throw $e;
+    }
+    else {
+      $form_state['token'] = NULL;
+      drupal_set_message(t('You have just experienced a rare and amazing occurance. A cryptographic collision has occured! Do not fret, nothing was harmed. While this is really rare and interesting it just means that we need you to generate another token. Submit the form again to leave this strange paralell universe.'), 'error');
+      return;
+    }
+  }
   drupal_set_message(t('A secure note creation token has been generated and stored. It will expire in TK hours.'));
 }
 
