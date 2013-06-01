@@ -16,7 +16,8 @@ function secure_notes_generate_token($time = REQUEST_TIME) {
  * TODO
  */
 function secure_notes_invite_add_link($form, &$form_state) {
-  $token = isset($form_state['token']) ? 'Secure Note Link: ' . $form_state['token'] : '';
+  global $base_url;
+  $token = isset($form_state['token']) ? 'Secure note creation link: ' . $base_url . '/secure-notes/add/' . $form_state['token'] : '';
   $options = secure_notes_get_allowed_types();
   $types = node_type_get_names();
   foreach ($options as $key => $value) {
@@ -41,8 +42,8 @@ function secure_notes_invite_add_link($form, &$form_state) {
   $form['token'] = array(
     '#type' => 'markup',
     '#markup' => $token,
-    '#prefix' => '<div id="token"><h2>',
-    '#suffix' => '</h2></div>',
+    '#prefix' => '<div id="token"><h3>',
+    '#suffix' => '</h3></div>',
   );
 
   $form['submit'] = array(
@@ -67,14 +68,13 @@ function secure_notes_add_token_submit($form, &$form_state) {
   $form_state['rebuild'] = TRUE;
   $expires = REQUEST_TIME + variable_get('secure_notes_default_expiration', 48) * 60 *60;
   try {
-  
-  db_insert('secure_notes_create')
-    ->fields(array(
-      'token' => $token,  
-      'expires' => $expires,
-      'type' => $form_state['values']['type'],
-      'email' => $form_state['values']['email'],
-    ))->execute();
+    db_insert('secure_notes_create')
+      ->fields(array(
+        'token' => $token,  
+        'expires' => $expires,
+        'type' => $form_state['values']['type'],
+        'email' => $form_state['values']['email'],
+      ))->execute();
   }
   catch (PDOException $e) {
     if ($e->errorInfo[1] != 1062) {
@@ -93,8 +93,9 @@ function secure_notes_add_token_submit($form, &$form_state) {
  * Submit handler for token creation.
  */
 function secure_notes_ajax_add_token_submit($form, &$form_state) {
+  global $base_url;
   $element = $form['token'];
-  $element['#markup'] = 'Token: ' . $form_state['token'];
+  $element['#markup'] = 'Secure note creation link: ' . $base_url . '/secure-notes/add/' . $form_state['token'];
   return $element;
 }
 
