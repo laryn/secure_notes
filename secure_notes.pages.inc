@@ -25,7 +25,7 @@ function secure_notes_invite_add_link($form, &$form_state) {
 
   $form = array();
 
-  $form['types'] = array(
+  $form['type'] = array(
     '#title' => t('Node Type'),
     '#description' => t('What type of node is the user being invited to create?'),
     '#type' => 'select',
@@ -62,11 +62,17 @@ function secure_notes_invite_add_link($form, &$form_state) {
  * TODO
  */
 function secure_notes_add_token_submit($form, &$form_state) {
-  // TODO FIX ME
-  $token = 'AAABBBCCCDDD';
-  //Make it nice and readable
+  $token = secure_notes_generate_token();
   $form_state['token'] = $token;
   $form_state['rebuild'] = TRUE;
+  $expires = REQUEST_TIME + variable_get('secure_notes_default_expiration', 48) * 60 *60;
+  db_insert('secure_notes_create')
+    ->fields(array(
+      'token' => $token,  
+      'expires' => $expires,
+      'type' => $form_state['values']['type'],
+      'email' => $form_state['values']['email'],
+    ))->execute();
   drupal_set_message(t('A secure note creation token has been generated and stored. It will expire in TK hours.'));
 }
 
