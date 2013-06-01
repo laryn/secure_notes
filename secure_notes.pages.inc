@@ -99,16 +99,6 @@ function secure_notes_ajax_add_link_invite_submit($form, &$form_state) {
   return $element;
 }
 
-
-/**
- * TODO
- */
-function secure_notes_get_allowed_types() {
-  $default = in_array('secure_note', array_keys(node_type_get_names())) ? array('secure_note' => 'secure_note') : array();
-  return variable_get('secure_notes_allowed_types', $default);
-}
-
-
 /**
  * TODO
  */

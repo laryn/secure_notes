@@ -72,7 +72,7 @@ function secure_notes_permission() {
       'title' => t('Generate secure note view invitations'),
       'restrict access' => TRUE,
     ),
-    'view secure notes' => array(
+    'secure notes node view' => array(
       'title' => t('View secure notes'),
       'description' => t('Secure notes need to be private to be secure. Allows access to secure note content.'),
       'restrict access' => TRUE,
@@ -118,15 +118,39 @@ function secure_notes_view_token_valid($token) {
     ->condition('token', $token, '=')
     ->execute()
     ->fetchObject();
-  drupal_set_message(t('The token you supplied is either invalid, has expired, or already been used. Please check that the url matches the one that was given to you.'), 'error');
-  return $result && (int) $result->expires > REQUEST_TIME;
+  $access = $result && (int) $result->expires > REQUEST_TIME;
+  if (!$access) {
+    drupal_set_message(t('The token you supplied is either invalid, has expired, or already been used. Please check that the url matches the one that was given to you.'), 'error');
+  }
+  return $access;
 }
 
 /**
  * TODO
  */
 function secure_notes_type_allowed($type) {
-  $default = in_array('secure_note', array_keys(node_type_get_names())) ? array('secure_note' => 'secure_note') : array();
-  $allowed = variable_get('secure_notes_allowed_types', $default);
+  $allowed = secure_notes_get_allowed_types(); //variable_get('secure_notes_allowed_types', $default);
   return in_array($type, $allowed);
 }
+
+/**
+ * TODO
+ */
+function secure_notes_get_allowed_types() {
+  $default = in_array('secure_note', array_keys(node_type_get_names())) ? array('secure_note' => 'secure_note') : array();
+  return variable_get('secure_notes_allowed_types', $default);
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function secure_notes_node_view($node, $view_mode, $langcode) {
+  global $user;
+  $allowed = secure_notes_get_allowed_types();
+  if (in_array($node->type, $allowed)) {
+    if (!user_access('secure notes node view', $user)) {
+      drupal_access_denied();
+    }
+  }
+}
+
