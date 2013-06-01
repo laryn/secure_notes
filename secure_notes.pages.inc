@@ -147,6 +147,11 @@ function secure_notes_render_node_view($token) {
  * TODO
  */
 function secure_notes_node_form_submit($form, &$form_state) {
+  $item = menu_get_item();
+  $token = $item['page_arguments'][0];
+  db_delete('secure_notes_create')
+    ->condition('token', $token, '=')
+    ->execute();
   // TODO make this a real redirect.
   $form_state['redirect'] = 'node/14';
 }
