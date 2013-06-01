@@ -15,7 +15,7 @@ function secure_notes_generate_token($time = REQUEST_TIME) {
 /**
  * TODO
  */
-function secure_notes_invite_add_link($form, &$form_state) {
+function secure_notes_add_link_invite($form, &$form_state) {
   global $base_url;
   $token = isset($form_state['token']) ? 'Secure note creation link: ' . $base_url . '/secure-notes/add/' . $form_state['token'] : '';
   $options = secure_notes_get_allowed_types();
@@ -50,10 +50,10 @@ function secure_notes_invite_add_link($form, &$form_state) {
     '#type' => 'submit',
     '#value' => 'Generate Link',
     '#ajax' => array(
-      'callback' => 'secure_notes_ajax_add_token_submit',
+      'callback' => 'secure_notes_ajax_add_link_invite_submit',
       'wrapper' => 'token',
     ),
-    '#submit' => array('secure_notes_add_token_submit'),
+    '#submit' => array('secure_notes_add_link_invite_submit'),
   );
 
   return $form;
@@ -62,7 +62,7 @@ function secure_notes_invite_add_link($form, &$form_state) {
 /**
  * TODO
  */
-function secure_notes_add_token_submit($form, &$form_state) {
+function secure_notes_add_link_invite_submit($form, &$form_state) {
   $token = secure_notes_generate_token();
   $form_state['token'] = $token;
   $form_state['rebuild'] = TRUE;
@@ -159,6 +159,10 @@ function secure_notes_render_add_form($token) {
   $output = drupal_render($form);
   return $output;
 }
+
+/**
+ * TODO
+ */
 function secure_notes_render_node_view($token) {
   $nid = db_select('secure_notes_view', 'snv')
     ->fields('snv', array('nid'))
@@ -170,14 +174,19 @@ function secure_notes_render_node_view($token) {
     ->execute();
   $output = node_view(node_load($nid));
   return $output;
-
 }
 
+/**
+ * TODO
+ */
 function secure_notes_node_form_submit($form, &$form_state) {
   // TODO make this a real redirect.
   $form_state['redirect'] = 'node/14';
 }
 
+/**
+ * TODO
+ */
 function secure_notes_form_node_form_alter(&$form, &$form_state) {
   $menu = menu_get_item();
   if ($menu['path'] == 'secure-notes/add/%') {

@@ -40,7 +40,7 @@ function secure_notes_menu() {
     'title' => t('Generate Secure Note Add Link'),
     'description' => t('Generate a one time use link for the creation of a note.'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('secure_notes_invite_add_link'),
+    'page arguments' => array('secure_notes_add_link_invite'),
     'access arguments' => array('secure notes invite add'),
     'file' => 'secure_notes.pages.inc',
   );
