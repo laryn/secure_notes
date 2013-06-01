@@ -118,6 +118,7 @@ function secure_notes_view_token_valid($token) {
     ->condition('token', $token, '=')
     ->execute()
     ->fetchObject();
+  drupal_set_message(t('The token you supplied is either invalid, has expired, or already been used. Please check that the url matches the one that was given to you.'), 'error');
   return $result && (int) $result->expires > REQUEST_TIME;
 }
 
