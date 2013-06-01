@@ -105,7 +105,6 @@ function secure_notes_add_token_valid($token) {
     ->condition('token', $token, '=')
     ->execute()
     ->fetchObject();
-  dvm($result && (int) $result->expires > REQUEST_TIME && secure_notes_type_allowed($result->type));
   return ($result && (int) $result->expires > REQUEST_TIME && secure_notes_type_allowed($result->type));
 }
 
