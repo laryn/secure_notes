@@ -62,6 +62,54 @@ function secure_notes_add_link_invite($form, &$form_state) {
 /**
  * TODO
  */
+function secure_notes_view_link_invite($form, &$form_state) {
+  global $base_url;
+  if (empty($form_state['values']['nid'])) {
+    $item = menu_get_item();
+    $nid = $item['map'][1];
+  }
+  else {
+    $nid = $form_state['values']['nid'];
+  }
+
+  $token = isset($form_state['token']) ? 'Secure note creation link: ' . $base_url . '/secure-notes/add/' . $form_state['token'] : '';
+
+  $form = array();
+
+  $form['nid'] = array(
+    '#type' => 'value',
+    '#value' => $nid,
+  );
+
+  $form['email'] = array(
+    '#title' => t('Email'),
+    '#description' => t('The email address of the person that will create the note.'),
+    '#type' => 'textfield',
+  );
+
+  $form['token'] = array(
+    '#type' => 'markup',
+    '#markup' => $token,
+    '#prefix' => '<div id="token"><h3>',
+    '#suffix' => '</h3></div>',
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Generate Link',
+    '#ajax' => array(
+      'callback' => 'secure_notes_ajax_view_link_invite_submit',
+      'wrapper' => 'token',
+    ),
+    '#submit' => array('secure_notes_view_link_invite_submit'),
+  );
+
+  return $form;
+}
+
+/**
+ * TODO
+ */
 function secure_notes_add_link_invite_submit($form, &$form_state) {
   $token = secure_notes_generate_token();
   $form_state['token'] = $token;
@@ -98,6 +146,48 @@ function secure_notes_ajax_add_link_invite_submit($form, &$form_state) {
   $element['#markup'] = 'Secure note creation link: ' . $base_url . '/secure-notes/add/' . $form_state['token'];
   return $element;
 }
+
+/**
+ * TODO
+ */
+function secure_notes_view_link_invite_submit($form, &$form_state) {
+  dpm($form_state);
+  $token = secure_notes_generate_token();
+  $form_state['token'] = $token;
+  $form_state['rebuild'] = TRUE;
+  $expires = REQUEST_TIME + variable_get('secure_notes_default_expiration', 48) * 60 *60;
+  try {
+    db_insert('secure_notes_view')
+      ->fields(array(
+        'token' => $token,  
+        'expires' => $expires,
+        'email' => $form_state['values']['email'],
+        'nid' => $form_state['values']['nid'],
+      ))->execute();
+  }
+  catch (PDOException $e) {
+    if ($e->errorInfo[1] != 1062) {
+      throw $e;
+    }
+    else {
+      $form_state['token'] = NULL;
+      drupal_set_message(t('You have just experienced a rare and amazing occurance. A cryptographic collision has occured! Do not fret, nothing was harmed. While this is really rare and interesting it just means that we need you to generate another token. Submit the form again to leave this strange paralell universe.'), 'error');
+      return;
+    }
+  }
+  drupal_set_message(t('A secure note creation token has been generated and stored. It will expire in TK hours.'));
+}
+
+/**
+ * Submit handler for token creation.
+ */
+function secure_notes_ajax_view_link_invite_submit($form, &$form_state) {
+  global $base_url;
+  $element = $form['token'];
+  $element['#markup'] = 'Secure note view link: ' . $base_url . '/secure-notes/view/' . $form_state['token'];
+  return $element;
+}
+
 
 /**
  * TODO
