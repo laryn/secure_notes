@@ -92,38 +92,13 @@ function secure_notes_add_link_invite_submit($form, &$form_state) {
 /**
  * Submit handler for token creation.
  */
-function secure_notes_ajax_add_token_submit($form, &$form_state) {
+function secure_notes_ajax_add_link_invite_submit($form, &$form_state) {
   global $base_url;
   $element = $form['token'];
   $element['#markup'] = 'Secure note creation link: ' . $base_url . '/secure-notes/add/' . $form_state['token'];
   return $element;
 }
 
-/**
- * TODO
- */
-function secure_notes_add_token_valid($token) {
-  $result = db_select('secure_notes_create', 'snc')
-    ->fields('snc', array('expires', 'type'))
-    ->condition('token', $token, '=')
-    ->execute()
-    ->fetchObject();
-  return $result && (int) $result->expires > REQUEST_TIME && secure_notes_type_allowed($result->type);
-}
-
-/**
- * TODO
- */
-function secure_notes_view_token_valid($token) {
-  $result = db_select('secure_notes_view', 'snv')
-    ->fields('snv', array('expires'))
-    ->condition('token', $token, '=')
-    ->execute()
-    ->fetchObject();
-  return $result && (int) $result->expires > REQUEST_TIME;
-  return TRUE;
-  return FALSE;
-}
 
 /**
  * TODO
@@ -133,14 +108,6 @@ function secure_notes_get_allowed_types() {
   return variable_get('secure_notes_allowed_types', $default);
 }
 
-/**
- * TODO
- */
-function secure_notes_type_allowed($type) {
-  $default = in_array('secure_note', array_keys(node_type_get_names())) ? array('secure_note' => 'secure_note') : array();
-  $allowed = variable_get('secure_notes_allowed_types', $default);
-  return in_array($type, $allowed);
-}
 
 /**
  * TODO

@@ -95,3 +95,37 @@ function secure_notes_help($path, $arg) {
   }
   return $output;
 }
+
+/**
+ * TODO
+ */
+function secure_notes_add_token_valid($token) {
+  $result = db_select('secure_notes_create', 'snc')
+    ->fields('snc', array('expires', 'type'))
+    ->condition('token', $token, '=')
+    ->execute()
+    ->fetchObject();
+  dvm($result && (int) $result->expires > REQUEST_TIME && secure_notes_type_allowed($result->type));
+  return ($result && (int) $result->expires > REQUEST_TIME && secure_notes_type_allowed($result->type));
+}
+
+/**
+ * TODO
+ */
+function secure_notes_view_token_valid($token) {
+  $result = db_select('secure_notes_view', 'snv')
+    ->fields('snv', array('expires'))
+    ->condition('token', $token, '=')
+    ->execute()
+    ->fetchObject();
+  return $result && (int) $result->expires > REQUEST_TIME;
+}
+
+/**
+ * TODO
+ */
+function secure_notes_type_allowed($type) {
+  $default = in_array('secure_note', array_keys(node_type_get_names())) ? array('secure_note' => 'secure_note') : array();
+  $allowed = variable_get('secure_notes_allowed_types', $default);
+  return in_array($type, $allowed);
+}
