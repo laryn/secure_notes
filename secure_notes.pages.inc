@@ -151,7 +151,6 @@ function secure_notes_ajax_add_link_invite_submit($form, &$form_state) {
  * TODO
  */
 function secure_notes_view_link_invite_submit($form, &$form_state) {
-  dpm($form_state);
   $token = secure_notes_generate_token();
   $form_state['token'] = $token;
   $form_state['rebuild'] = TRUE;

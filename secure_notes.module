@@ -30,6 +30,7 @@ function secure_notes_menu() {
   $items['secure-notes/view/%'] = array(
     'title' => 'View Secure Note',
     'description' => 'View a secure note',
+    'type' => MENU_CALLBACK,
     'page callback' => 'secure_notes_render_node_view',
     'page arguments' => array(2),
     'access callback' => 'secure_notes_view_token_valid',
