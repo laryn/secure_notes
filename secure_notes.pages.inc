@@ -215,10 +215,9 @@ function secure_notes_render_node_view($token) {
     ->condition('token', $token, '=')
     ->execute()
     ->fetchField();
-  db_delete('secure_notes_view')
-    ->condition('token', $token, '=')
-    ->execute();
-  $output = node_view(node_load($nid));
+  $node = node_load($nid);
+  $node->note_pickup = TRUE;
+  $output = node_view($node);
   return $output;
 }
 

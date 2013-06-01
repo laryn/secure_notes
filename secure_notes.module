@@ -180,7 +180,9 @@ function secure_notes_node_view($node, $view_mode, $langcode) {
   // Deny normal access to secure notes.
   if (in_array($node->type, $allowed)) {
     if (!user_access('secure notes node view', $user)) {
-      drupal_access_denied();
+      if (empty($node->note_pickup)) {
+        drupal_access_denied();
+      }
     }
   }
 }
