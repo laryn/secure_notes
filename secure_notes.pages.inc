@@ -44,6 +44,18 @@ function secure_notes_add_link_invite($form, &$form_state) {
     '#type' => 'textfield',
   );
 
+  $form['email_send'] = array(
+    '#title' => t('Send email'),
+    '#description' => t('If checked the system will automatically email the user for you using the text below.'),
+    '#type' => 'checkbox',
+  );
+
+  $form['email_message'] = array(
+    '#title' => t('Email Message'),
+    '#description' => t('The following email will be automatically send to the email address above. You may alter this message but make sure to include the [invite-token] somewhere in the message or else your invitation will not be useful at all.'),
+    '#type' => 'textarea',
+  );
+
   $form['token'] = array(
     '#type' => 'markup',
     '#markup' => $token,
@@ -92,6 +104,24 @@ function secure_notes_view_link_invite($form, &$form_state) {
     '#type' => 'textfield',
   );
 
+  $form['email'] = array(
+    '#title' => t('Email'),
+    '#description' => t('The email address of the person that will create the note.'),
+    '#type' => 'textfield',
+  );
+
+  $form['email_send'] = array(
+    '#title' => t('Send email'),
+    '#description' => t('If checked the system will automatically email the user for you using the text below.'),
+    '#type' => 'checkbox',
+  );
+
+  $form['email_message'] = array(
+    '#title' => t('Email Message'),
+    '#description' => t('The following email will be automatically send to the email address above. You may alter this message but make sure to include the [invite-token] somewhere in the message or else your invitation will not be useful at all.'),
+    '#type' => 'textarea',
+  );
+
   $form['token'] = array(
     '#type' => 'markup',
     '#markup' => $token,
@@ -119,7 +149,8 @@ function secure_notes_add_link_invite_submit($form, &$form_state) {
   $token = secure_notes_generate_token();
   $form_state['token'] = $token;
   $form_state['rebuild'] = TRUE;
-  $expires = REQUEST_TIME + variable_get('secure_notes_default_expiration', 48) * 60 *60;
+  $expires_hours = variable_get('secure_notes_default_expiration', 48);
+  $expires = REQUEST_TIME + $expires_hours * 60 *60;
   try {
     db_insert('secure_notes_create')
       ->fields(array(
@@ -139,7 +170,7 @@ function secure_notes_add_link_invite_submit($form, &$form_state) {
       return;
     }
   }
-  drupal_set_message(t('A secure note creation token has been generated and stored. It will expire in TK hours.'));
+  drupal_set_message(t('A secure note creation token has been generated and stored. It will expire in @hours hours.', array('@hours' => $expires_hours)));
 }
 
 /**
@@ -159,7 +190,8 @@ function secure_notes_view_link_invite_submit($form, &$form_state) {
   $token = secure_notes_generate_token();
   $form_state['token'] = $token;
   $form_state['rebuild'] = TRUE;
-  $expires = REQUEST_TIME + variable_get('secure_notes_default_expiration', 48) * 60 *60;
+  $expires_hours = variable_get('secure_notes_default_expiration', 48);
+  $expires = REQUEST_TIME + $expires_hours * 60 *60;
   try {
     db_insert('secure_notes_view')
       ->fields(array(
@@ -179,7 +211,7 @@ function secure_notes_view_link_invite_submit($form, &$form_state) {
       return;
     }
   }
-  drupal_set_message(t('A secure note creation token has been generated and stored. It will expire in TK hours.'));
+  drupal_set_message(t('A secure note creation token has been generated and stored. It will expire in @hours hours.', array('@hours' => $expires_hours)));
 }
 
 /**

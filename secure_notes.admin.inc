@@ -21,6 +21,7 @@ function secure_notes_admin_settings_form() {
     '#default_value' => $default,
   );
 
+  $default_expire = variable_get('secure_notes_default_expiration', 48);
   $form['secure_notes_default_expiration'] = array(
     '#title' => t('Token expiration'),
     '#description' => t('Secure note tokens will expire if not used after this amount of time.'),
@@ -37,7 +38,7 @@ function secure_notes_admin_settings_form() {
       120 => t('120 hours (5 days)'),
       168 => t('168 hours (1 week)'),
     ),
-    '#default_value' => 48,
+    '#default_value' => $default_expire,
   );
 
   // Rebuild node access database.
