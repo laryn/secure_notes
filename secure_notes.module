@@ -116,7 +116,7 @@ function secure_notes_add_token_valid($token) {
     ->condition('token', $token, '=')
     ->execute()
     ->fetchObject();
-  $access = ($result && (int) $result->expires > REQUEST_TIME && secure_notes_type_allowed($result->type));
+  $access = ($result && (int) $result->expires > REQUEST_TIME && secure_notes_type_enabled($result->type));
   if (!$access) {
     drupal_set_message(t('The token you supplied is either invalid, has expired, or already been used. Please check that the url matches the one that was given to you.'), 'error');
   }
@@ -148,7 +148,7 @@ function secure_notes_node_invite_access($nid, $perm) {
   // type.
   if (user_access($perm, $user)) {
     $node = node_load($nid);
-    if (secure_notes_type_allowed($node->type)) {
+    if (secure_notes_type_enabled($node->type)) {
       return TRUE;
     }
   }
@@ -158,18 +158,14 @@ function secure_notes_node_invite_access($nid, $perm) {
 /**
  * TODO
  */
-function secure_notes_type_allowed($type) {
-  $allowed = secure_notes_get_allowed_types(); //variable_get('secure_notes_allowed_types', $default);
-  return in_array($type, $allowed);
+function secure_notes_type_enabled($type) {
+  $allowed = secure_notes_get_types();
+  return in_array($type, $allowed, TRUE);
 }
 
 /**
  * TODO
  */
-function secure_notes_get_allowed_types() {
-  $default = in_array('secure_note', array_keys(node_type_get_names())) ? array('secure_note' => 'secure_note') : array();
-  return variable_get('secure_notes_allowed_types', $default);
-}
 
 /**
  * Implements hook_node_view().
@@ -185,6 +181,9 @@ function secure_notes_node_view($node, $view_mode, $langcode) {
       }
     }
   }
+function secure_notes_get_types() {
+  $default = in_array('secure_note', array_keys(node_type_get_names()), TRUE) ? array('secure_note' => 'secure_note') : array();
+  return variable_get('secure_notes_types', $default);
 }
 
 /**

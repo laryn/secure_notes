@@ -18,7 +18,7 @@ function secure_notes_generate_token($time = REQUEST_TIME) {
 function secure_notes_add_link_invite($form, &$form_state) {
   global $base_url;
   $token = isset($form_state['token']) ? 'Secure note creation link: ' . $base_url . '/secure-notes/add/' . $form_state['token'] : '';
-  $options = secure_notes_get_allowed_types();
+  $options = secure_notes_get_types();
   $types = node_type_get_names();
   foreach ($options as $key => $value) {
     $options[$key] = $types[$key];
@@ -118,7 +118,7 @@ function secure_notes_add_link_invite_submit($form, &$form_state) {
   try {
     db_insert('secure_notes_create')
       ->fields(array(
-        'token' => $token,  
+        'token' => $token,
         'expires' => $expires,
         'type' => $form_state['values']['type'],
         'email' => $form_state['values']['email'],
@@ -158,7 +158,7 @@ function secure_notes_view_link_invite_submit($form, &$form_state) {
   try {
     db_insert('secure_notes_view')
       ->fields(array(
-        'token' => $token,  
+        'token' => $token,
         'expires' => $expires,
         'email' => $form_state['values']['email'],
         'nid' => $form_state['values']['nid'],

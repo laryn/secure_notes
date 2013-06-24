@@ -10,7 +10,7 @@
  */
 function secure_notes_admin_settings_form() {
   // Make sure the secure note type hasn't been deleted.
-  $default = in_array('secure_note', array_keys(node_type_get_names())) ? array('secure_note' => 'secure_note') : array();
+  $default = secure_notes_get_types();
   $form = array();
 
   $form['secure_notes_allowed_types'] = array(
