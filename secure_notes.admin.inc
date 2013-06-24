@@ -40,5 +40,9 @@ function secure_notes_admin_settings_form() {
     '#default_value' => 48,
   );
 
+  // Rebuild node access database.
+  // @todo get the time stuff out of here. We shouldn't need to rebuild on expiration changes.
+  node_access_needs_rebuild(TRUE);
+
   return system_settings_form($form);
 }

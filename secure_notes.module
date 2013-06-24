@@ -200,3 +200,69 @@ function secure_notes_exit() {
       ->execute();
   }
 }
+
+/**
+ * Implements hook_node_access().
+ */
+function secure_notes_node_access($node, $op, $account) {
+  $access = NODE_ACCESS_IGNORE;
+  $types = secure_notes_get_types();
+  if (is_string($node)) {
+    $access = NODE_ACCESS_IGNORE;
+  }
+  else if (!in_array($node->type, $types, TRUE)) {
+    // If it is not a secure note type then ignore it.
+    $access = NODE_ACCESS_IGNORE;
+  }
+  else if (!empty($node->note_pickup)) {
+    $access = NODE_ACCESS_ALLOW;
+  }
+  return $access;
+}
+
+/**
+ * Implements hook_node_grants().
+ */
+function secure_notes_node_grants($account, $op) {
+  $grants = array();
+  // If the user is allowed to view or edit notes then supply the appropriate grants.
+  if ($op == 'view' && user_access('secure notes node view', $account)) {
+    $grants['secure_notes_view'] = array(1);
+  }
+
+  if (($op == 'update' || $op == 'delete') && user_access('secure notes node edit', $account)) {
+    $grants['secure_notes_edit'] = array(2);
+  }
+  return $grants;
+}
+
+/**
+ * Implements hook_node_access_records().
+ */
+function secure_notes_node_access_records($node) {
+  // We only care about the node if it is a secure note. If not, it is
+  // treated just like any other node and we completely ignore it.
+  $types = secure_notes_get_types();
+  // Deny normal access to secure notes.
+  if (in_array($node->type, $types, TRUE)) {
+    $grants = array();
+    $grants[] = array(
+      'realm' => 'secure_notes_view',
+      'gid' => 1,
+      'grant_view' => 1,
+      'grant_update' => 0,
+      'grant_delete' => 0,
+      'priority' => 0,
+    );
+    $grants[] = array(
+      'realm' => 'secure_notes_edit',
+      'gid' => 2,
+      'grant_view' => 1,
+      'grant_update' => 1,
+      'grant_delete' => 1,
+      'priority' => 0,
+    );
+    return $grants;
+  }
+  // Return nothing if the node is not marked as a secure note type.
+}
