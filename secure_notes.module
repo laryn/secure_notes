@@ -161,7 +161,13 @@ function secure_notes_node_invite_access($nid, $perm) {
 }
 
 /**
- * TODO
+ * Helper function to determine if a given node type is a secure note.
+ *
+ * @param string $type - The node type in question.
+ *
+ * @return boolean
+ *   Returns TRUE if secure notes are enabled on the type in question.
+ *   Otherwise FALSE.
  */
 function secure_notes_type_enabled($type) {
   $allowed = secure_notes_get_types();
@@ -169,23 +175,17 @@ function secure_notes_type_enabled($type) {
 }
 
 /**
- * TODO
+ * Helper function used to get a list of node types that support secure notes.
+ *
+ * @return an associative array that denotes the secure note node types.
+ *   The array lists all the node types as keys with a zero for the value if the
+ *   node is not a secure note and the name of the node type if the type is a
+ *   note. As a result it is important to use strict checking with using
+ *   in_array for testing.
+ *   Example
+ *     'page' => 0,
+ *     'article' => 'article'
  */
-
-/**
- * Implements hook_node_view().
- */
-function secure_notes_node_view($node, $view_mode, $langcode) {
-  global $user;
-  $allowed = secure_notes_get_allowed_types();
-  // Deny normal access to secure notes.
-  if (in_array($node->type, $allowed)) {
-    if (!user_access('secure notes node view', $user)) {
-      if (empty($node->note_pickup)) {
-        drupal_access_denied();
-      }
-    }
-  }
 function secure_notes_get_types() {
   $default = in_array('secure_note', array_keys(node_type_get_names()), TRUE) ? array('secure_note' => 'secure_note') : array();
   return variable_get('secure_notes_types', $default);
