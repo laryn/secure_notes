@@ -88,6 +88,11 @@ function secure_notes_permission() {
       'description' => t('Secure notes need to be private to be secure. Allows access to secure note content.'),
       'restrict access' => TRUE,
     ),
+    'secure notes node edit' => array(
+      'title' => t('Edit secure notes'),
+      'description' => t('Secure notes need to be private to be secure. Allows edit and delete access on secure note content.'),
+      'restrict access' => TRUE,
+    ),
   );
 }
 
