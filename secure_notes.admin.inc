@@ -13,7 +13,7 @@ function secure_notes_admin_settings_form() {
   $default = secure_notes_get_types();
   $form = array();
 
-  $form['secure_notes_allowed_types'] = array(
+  $form['secure_notes_types'] = array(
     '#title' => t('The content types that are allowed to be viewed or created as secure notes.'),
     '#description' => t('Only specified node types will be allowed to be accessed or created using secure notes.'),
     '#type' => 'checkboxes',
