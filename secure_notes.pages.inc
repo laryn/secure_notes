@@ -21,7 +21,12 @@ function secure_notes_add_link_invite($form, &$form_state) {
   $options = secure_notes_get_types();
   $types = node_type_get_names();
   foreach ($options as $key => $value) {
-    $options[$key] = $types[$key];
+    if (empty($value)) {
+      unset($options[$key]);
+    }
+    else {
+      $options[$key] = $types[$key];
+    }
   }
 
   $form = array();
