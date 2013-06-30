@@ -21,6 +21,7 @@ function secure_notes_menu() {
   $items['secure-notes/add/%'] = array(
     'title' => 'Create Secure Note',
     'description' => 'Create a secure note',
+    'type' => MENU_CALLBACK,
     'page callback' => 'secure_notes_render_add_form',
     'page arguments' => array(2),
     'access callback' => 'secure_notes_add_token_valid',
@@ -66,9 +67,18 @@ function secure_notes_menu() {
     'access arguments' => array('view'),
     'file' => 'secure_notes.pages.inc',
   );
+  $items['admin/content/secure-notes'] = array(
+    'title' => t('Secure Notes'),
+    'description' => t('Review secure note invitations.'),
+    'page callback' => 'secure_notes_manage',
+    'access callback' => 'secure_notes_review_access',
+    'access arguments' => array('any'),
+    'page callback' => 'system_admin_menu_block_page',
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+  );
   $items['admin/content/secure-notes/review/add'] = array(
     'title' => t('Review Secure Note Creation Invitations'),
-    'type' => MENU_LOCAL_TASK,
     'description' => t('Review secure note creation invitations.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('secure_notes_review', 'add'),
@@ -78,7 +88,6 @@ function secure_notes_menu() {
   );
   $items['admin/content/secure-notes/review/view'] = array(
     'title' => t('Review Secure Note View Invitations'),
-    'type' => MENU_LOCAL_TASK,
     'description' => t('Review secure note creation invitations.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('secure_notes_review', 'view'),
@@ -86,16 +95,6 @@ function secure_notes_menu() {
     'access arguments' => array('view'),
     'file' => 'secure_notes.pages.inc',
   );
-  /*
-  $items['admin/content/secure-notes/email'] = array(
-    'title' => t('Send Secure Note Email'),
-    'description' => t('Generate a one time use link for the creation of a note.'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('secure_notes_generate_link'),
-    'access arguments' => array('generate secure notes links'),
-    'file' => 'secure_notes.pages.inc',
-  );
-  */
   return $items;
 }
 
@@ -105,10 +104,10 @@ function secure_notes_menu() {
 function secure_notes_menu_local_tasks_alter(&$data, $router_item, $root_path) {
   // Add action link to 'admin/content' page.
   if ($root_path == 'admin/content') {
-    $item = menu_get_item('admin/content/secure-notes/invite/add');
+    $item = menu_get_item('admin/content/secure-notes');
     if ($item['access']) {
-      $data['actions']['output'][] = array(
-        '#theme' => 'menu_local_action',
+      $data['tabs'][0]['output'][] = array(
+        '#theme' => 'menu_local_task',
         '#link' => $item,
       );
     }
