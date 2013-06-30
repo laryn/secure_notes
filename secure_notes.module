@@ -140,6 +140,21 @@ function secure_notes_permission() {
       'description' => t('Secure notes need to be private to be secure. Allows edit and delete access on secure note content.'),
       'restrict access' => TRUE,
     ),
+    'secure notes manage view invitations' => array(
+      'title' => t('Manage secure note view invitations'),
+      'description' => t('Allows the managment of invitations to view secure notes including the ability to revoke/delete invitations.'),
+      'restrict access' => TRUE,
+    ),
+    'secure notes manage add invitations' => array(
+      'title' => t('Manage secure note create invitations'),
+      'description' => t('Allows the managment of invitations to create secure notes including the ability to revoke/delete invitations.'),
+      'restrict access' => TRUE,
+    ),
+    'secure notes manage all' => array(
+      'title' => t('Manage all secure note invitations'),
+      'description' => t('Allows the managment of all secure note invitations.'),
+      'restrict access' => TRUE,
+    ),
   );
 }
 
@@ -205,6 +220,29 @@ function secure_notes_node_invite_access($nid, $perm) {
     }
   }
   return FALSE;
+}
+
+/**
+ * Access callback to determine if a user should be allowed to view secure notes
+ * invitation management pages.
+ */
+function secure_notes_review_access($invitation_type = NULL) {
+  global $user;
+  $access = FALSE;
+
+  if (user_access('secure notes manage all', $user)) {
+    $access = TRUE;
+  }
+  else {
+    if ($invitation_type == 'add' && user_access('secure notes manage add invitations', $user)) {
+      $access = TRUE;
+    }
+    if ($invitation_type == 'view' &&  user_access('secure notes manage view invitations', $user)) {
+      $access = TRUE;
+    }
+  }
+
+  return $access;
 }
 
 /**
