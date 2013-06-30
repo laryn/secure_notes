@@ -296,9 +296,11 @@ function secure_notes_review($form, $form_state, $invitation_type) {
   $header = array();
   if ($invitation_type == 'add') {
     $header['type'] = array('data' => t('Type'), 'field' => 't.type');
+    $abrv = 'a';
   }
   if ($invitation_type == 'view') {
     $header['title'] = array('data' => t('Title'), 'field' => 'n.title');
+    $abrv = 'v';
   }
   $header = $header + array(
     'email' => array('data' => t('Email'), 'field' => 't.email'),
@@ -329,9 +331,10 @@ function secure_notes_review($form, $form_state, $invitation_type) {
       'token' => $token['token'],
       'expires' => format_date($token['expires'], 'short'),
     );
+    // We use an abbriviaation in the delete link to avoid confusion. It would be weird to see a link such as secure-note/add/token/delete.
     $link = array(
       'title' => t('delete'),
-      'href' => 'secure-note/' . $token['token'] . '/delete',
+      'href' => 'secure-notes/' . $abrv . '/' . $token['token'] . '/delete',
       'query' => $destination,
     );
 
@@ -352,4 +355,53 @@ function secure_notes_review($form, $form_state, $invitation_type) {
   );
   $form['pager'] = array('#markup' => theme('pager'));
   return $form;
+}
+
+/**
+ * Form constructor for the token deletion confirmation form.
+ *
+ * @see secure_notes_delete_confirm_submit()
+ */
+function secure_notes_delete_confirm($form, &$form_state, $type, $token) {
+  if ($type == 'a') {
+    $type = 'add';
+  }
+  else if ($type == 'v') {
+    $type = 'view';
+  }
+  $form['secure-notes-type'] = array('#type' => 'value', '#value' => $type);
+  $form['secure-notes-token'] = array('#type' => 'value', '#value' => $token);
+  return confirm_form(
+    $form,
+    t('Are you sure you want to delete this token?'),
+    'secure-notes/review/' . $type,
+    t('This action cannot be undone.'),
+    t('Delete'),
+    t('Cancel')
+  );
+}
+
+/**
+ * Executes token deletion.
+ *
+ * @see secure_notes_delete_confirm()
+ */
+function secure_notes_delete_confirm_submit($form, &$form_state) {
+  if ($form_state['values']['confirm']) {
+    $token = $form_state['values']['secure-notes-token'];
+    $type = $form_state['values']['secure-notes-type'];
+    secure_notes_token_delete($form_state['values']['secure-notes-type'], $form_state['values']['secure-notes-token']);
+    watchdog('secure notes', 'Secure note token %token was deleted.', array('%token' => $token));
+    drupal_set_message(t('Token %token has been deleted.', array('%token' => $token)));
+  }
+
+  $form_state['redirect'] = 'secure-notes/review/' . $type;
+}
+
+function secure_notes_token_delete($type, $token) {
+  if ($type == 'add') {
+    db_delete('secure_notes_create')
+      ->condition('token', $token, '=')
+      ->execute();
+  }
 }

@@ -95,6 +95,17 @@ function secure_notes_menu() {
     'access arguments' => array('view'),
     'file' => 'secure_notes.pages.inc',
   );
+  $items['secure-notes/%/%/delete'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('secure_notes_delete_confirm', 1, 2),
+    'access callback' => 'secure_notes_review_access',
+    'access arguments' => array(NULL, 1),
+    'weight' => 1,
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_INLINE,
+    'file' => 'secure_notes.pages.inc',
+  );
   return $items;
 }
 
@@ -225,9 +236,15 @@ function secure_notes_node_invite_access($nid, $perm) {
  * Access callback to determine if a user should be allowed to view secure notes
  * invitation management pages.
  */
-function secure_notes_review_access($invitation_type = NULL) {
+function secure_notes_review_access($invitation_type = NULL, $abrv = NULL) {
   global $user;
   $access = FALSE;
+  if ($abrv == 'a') {
+    $invitation_type = 'add';
+  }
+  else if ($abrv == 'v') {
+    $invitation_type = 'view';
+  }
 
   if (user_access('secure notes manage all', $user)) {
     $access = TRUE;
@@ -237,6 +254,9 @@ function secure_notes_review_access($invitation_type = NULL) {
       $access = TRUE;
     }
     if ($invitation_type == 'view' &&  user_access('secure notes manage view invitations', $user)) {
+      $access = TRUE;
+    }
+    if ($invitation_type == 'any' &&  (user_access('secure notes manage view invitations', $user) || user_access('secure notes manage add invitations', $user))) {
       $access = TRUE;
     }
   }
