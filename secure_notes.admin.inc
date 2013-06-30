@@ -21,6 +21,11 @@ function secure_notes_admin_settings_form() {
     '#default_value' => $default,
   );
 
+  $form['secure_notes_types_original'] = array(
+    '#type' => 'value',
+    '#value' => $default,
+  );
+
   $default_expire = variable_get('secure_notes_default_expiration', 48);
   $form['secure_notes_default_expiration'] = array(
     '#title' => t('Token expiration'),
@@ -41,9 +46,22 @@ function secure_notes_admin_settings_form() {
     '#default_value' => $default_expire,
   );
 
-  // Rebuild node access database.
-  // @todo get the time stuff out of here. We shouldn't need to rebuild on expiration changes.
-  node_access_needs_rebuild(TRUE);
+  $form = system_settings_form($form);
+  $form['#submit'][] = 'secure_notes_secure_notes_admin_settings_additional_submit';
+  return $form;
+}
 
-  return system_settings_form($form);
+/**
+ * Additional submission handler for secure_notes_admin_settings_form(). Flag
+ * the access permissions for rebuild if and only if the list of allowed secure
+ * notes types has changed.
+ *
+ * @see secure_notes_admin_settings_form().
+ */
+function secure_notes_secure_notes_admin_settings_additional_submit($form, &$form_state) {
+  $diff = array_diff_assoc($form_state['values']['secure_notes_types'], $form_state['values']['secure_notes_types_original']);
+  if (!empty($diff)) {
+    // Rebuild node access database.
+    node_access_needs_rebuild(TRUE);
+  }
 }
