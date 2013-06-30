@@ -280,3 +280,76 @@ function secure_notes_form_node_form_alter(&$form, &$form_state) {
     $form['actions']['submit']['#submit'][] = 'secure_notes_node_form_submit';
   }
 }
+
+/**
+ * TODO
+ */
+function secure_notes_review($form, $form_state, $invitation_type) {
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Delete Selected'),
+    '#validate' => array('secure_notes_manage_validate'),
+    '#submit' => array('secure_notes_manage_submit'),
+  );
+
+  // Build the sortable table header.
+  $header = array();
+  if ($invitation_type == 'add') {
+    $header['type'] = array('data' => t('Type'), 'field' => 't.type');
+  }
+  if ($invitation_type == 'view') {
+    $header['title'] = array('data' => t('Title'), 'field' => 'n.title');
+  }
+  $header = $header + array(
+    'email' => array('data' => t('Email'), 'field' => 't.email'),
+    //'generator' => array('data' => t('Invited By'), 'field' => 't.uid'),
+    'token' => array('data' => t('Token'), 'field' => 't.token'),
+    'expires' => array('data' => t('Expires'), 'field' => 't.expires'),
+    'operations' => t('Operations'),
+  );
+
+  if ($invitation_type == 'add') {
+    $query = db_select('secure_notes_create', 't')->extend('PagerDefault')->extend('TableSort');
+    $query->fields('t', array('token', 'email', 'expires', 'type'));
+  }
+  if ($invitation_type == 'view') {
+    $query = db_select('secure_notes_view', 't')->extend('PagerDefault')->extend('TableSort');
+    $query->fields('t', array('token', 'email', 'expires', 'nid'))->join('node', 'n', 'n.nid = t.nid');
+  }
+  $tokens =$query->limit(50)->orderByHeader($header)->execute();
+
+  $destination = drupal_get_destination();
+
+  $options = array();
+  while($token = $tokens->fetchAssoc()) {
+    $options[$token['token']] = array(
+      'type' => check_plain(node_type_get_name($token['type'])),
+      'email' => isset($token['email']) ? check_plain($token['email']) : '',
+      //'generator' => theme('username', array('account' => $token['uid'])),
+      'token' => $token['token'],
+      'expires' => format_date($token['expires'], 'short'),
+    );
+    $link = array(
+      'title' => t('delete'),
+      'href' => 'secure-note/' . $token['token'] . '/delete',
+      'query' => $destination,
+    );
+
+    $options[$token['token']]['operations'] = array(
+      'data' => array(
+        '#type' => 'link',
+        '#title' => $link['title'],
+        '#href' => $link['href'],
+        '#options' => array('query' => $link['query']),
+      ),
+    );
+  }
+  $form['tokens'] = array(
+    '#type' => 'tableselect',
+    '#header' => $header,
+    '#options' => $options,
+    '#empty' => t('No content available.'),
+  );
+  $form['pager'] = array('#markup' => theme('pager'));
+  return $form;
+}
