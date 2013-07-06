@@ -285,6 +285,16 @@ function secure_notes_form_node_form_alter(&$form, &$form_state) {
  * TODO
  */
 function secure_notes_review($form, $form_state, $invitation_type) {
+  // Direct them to the confirm form submission if they have been through once
+  // already.
+  if (isset($form_state['storage']['confirm'])) {
+    $tokens = $form_state['values']['tokens'];
+    $form = secure_notes_delete_confirm($form, $form_state, $invitation_type, $tokens);
+    $form['#submit'] = array('secure_notes_delete_confirm_submit');
+    return $form;
+  }
+
+  // Otherwise build out the normal administration form.
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Delete Selected'),
@@ -315,17 +325,25 @@ function secure_notes_review($form, $form_state, $invitation_type) {
     $query->fields('t', array('token', 'email', 'expires', 'type'));
   }
   if ($invitation_type == 'view') {
+
     $query = db_select('secure_notes_view', 't')->extend('PagerDefault')->extend('TableSort');
     $query->fields('t', array('token', 'email', 'expires', 'nid'))->join('node', 'n', 'n.nid = t.nid');
   }
-  $tokens =$query->limit(50)->orderByHeader($header)->execute();
+  $tokens = $query->limit(50)->orderByHeader($header)->execute();
 
   $destination = drupal_get_destination();
 
   $options = array();
   while($token = $tokens->fetchAssoc()) {
-    $options[$token['token']] = array(
-      'type' => check_plain(node_type_get_name($token['type'])),
+    $options[$token['token']] = array();
+    if (!empty($token['type'])) {
+      $options[$token['token']]['type'] = check_plain(node_type_get_name($token['type']));
+    }
+    else if (!empty($token['nid'])) {
+      $node = node_load($token['nid']);
+      $options[$token['token']]['title'] = l($node->title, 'node/' . $node->nid); 
+    }
+    $options[$token['token']] = $options[$token['token']] + array(
       'email' => isset($token['email']) ? check_plain($token['email']) : '',
       //'generator' => theme('username', array('account' => $token['uid'])),
       'token' => $token['token'],
@@ -362,19 +380,31 @@ function secure_notes_review($form, $form_state, $invitation_type) {
  *
  * @see secure_notes_delete_confirm_submit()
  */
-function secure_notes_delete_confirm($form, &$form_state, $type, $token) {
+function secure_notes_delete_confirm($form, &$form_state, $type, $tokens) {
   if ($type == 'a') {
     $type = 'add';
   }
   else if ($type == 'v') {
     $type = 'view';
   }
+  // If the incoming value is a string then convert it to a single value array.
+  if (is_string($tokens)) {
+    $tokens = array(
+      $tokens,
+    );
+  }
+  else {
+    $tokens = array_filter($tokens);
+  }
   $form['secure-notes-type'] = array('#type' => 'value', '#value' => $type);
-  $form['secure-notes-token'] = array('#type' => 'value', '#value' => $token);
+  $form['secure-notes-tokens'] = array('#type' => 'value', '#value' => $tokens);
+
+  $question = format_plural(count($tokens), 'Are you sure you want to delete this token?', 'Are you sure you want to delete these tokens?');
+
   return confirm_form(
     $form,
-    t('Are you sure you want to delete this token?'),
-    'secure-notes/review/' . $type,
+    $question,
+    'admin/content/secure-notes/review/' . $type,
     t('This action cannot be undone.'),
     t('Delete'),
     t('Cancel')
@@ -388,20 +418,31 @@ function secure_notes_delete_confirm($form, &$form_state, $type, $token) {
  */
 function secure_notes_delete_confirm_submit($form, &$form_state) {
   if ($form_state['values']['confirm']) {
-    $token = $form_state['values']['secure-notes-token'];
+    $tokens = $form_state['values']['secure-notes-tokens'];
     $type = $form_state['values']['secure-notes-type'];
-    secure_notes_token_delete($form_state['values']['secure-notes-type'], $form_state['values']['secure-notes-token']);
-    watchdog('secure notes', 'Secure note token %token was deleted.', array('%token' => $token));
-    drupal_set_message(t('Token %token has been deleted.', array('%token' => $token)));
+    secure_notes_token_delete($type, $tokens);
+    $count = count($tokens);
+    watchdog('secure notes', 'Deleted @count secure notes tokens.', array('@count' => $count));
+    drupal_set_message(format_plural($count, 'Deleted 1 secure notes token.', 'Deleted @count secure notes tokens.'));
   }
 
-  $form_state['redirect'] = 'secure-notes/review/' . $type;
+  $form_state['redirect'] = 'admin/content/secure-notes/review/' . $type;
 }
 
-function secure_notes_token_delete($type, $token) {
-  if ($type == 'add') {
-    db_delete('secure_notes_create')
-      ->condition('token', $token, '=')
-      ->execute();
+function secure_notes_manage_validate($form, &$form_state) {
+  if (!is_array($form_state['values']['tokens']) || !count(array_filter($form_state['values']['tokens']))) {
+    form_set_error('', t('No items selected.'));
+  }
+}
+
+function secure_notes_manage_submit($form, &$form_state) {
+  if (empty($form_state['storage']['confirm'])) {
+    $tokens = array_filter($form_state['values']['tokens']);
+    $form_state['rebuild'] = TRUE;
+    $form_state['storage']['confirm'] = TRUE;
+  }
+  else {
+    secure_notes_delete_confirm_submit($form, $form_state);
+    $form_state['rebuild'] = TRUE;
   }
 }
