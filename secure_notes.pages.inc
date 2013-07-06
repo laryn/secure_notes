@@ -403,11 +403,12 @@ function secure_notes_delete_confirm($form, &$form_state, $type, $tokens) {
   $form['secure-notes-tokens'] = array('#type' => 'value', '#value' => $tokens);
 
   $question = format_plural(count($tokens), 'Are you sure you want to delete this token?', 'Are you sure you want to delete these tokens?');
+  $destination = drupal_get_destination();
 
   return confirm_form(
     $form,
     $question,
-    'admin/content/secure-notes/review/' . $type,
+    $destination['destination'],
     t('This action cannot be undone.'),
     t('Delete'),
     t('Cancel')
@@ -428,8 +429,6 @@ function secure_notes_delete_confirm_submit($form, &$form_state) {
     watchdog('secure notes', 'Deleted @count secure notes tokens.', array('@count' => $count));
     drupal_set_message(format_plural($count, 'Deleted 1 secure notes token.', 'Deleted @count secure notes tokens.'));
   }
-
-  $form_state['redirect'] = 'admin/content/secure-notes/review/' . $type;
 }
 
 function secure_notes_manage_validate($form, &$form_state) {
