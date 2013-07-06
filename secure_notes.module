@@ -62,7 +62,7 @@ function secure_notes_menu() {
     'type' => MENU_LOCAL_TASK,
     'description' => t('Review secure note invitations for this node.'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('secure_notes_review', 1),
+    'page arguments' => array('secure_notes_review', 'view', 1),
     'access callback' => 'secure_notes_review_access',
     'access arguments' => array('view'),
     'file' => 'secure_notes.pages.inc',

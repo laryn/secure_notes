@@ -284,7 +284,7 @@ function secure_notes_form_node_form_alter(&$form, &$form_state) {
 /**
  * TODO
  */
-function secure_notes_review($form, $form_state, $invitation_type) {
+function secure_notes_review($form, $form_state, $invitation_type, $nid = NULL) {
   // Direct them to the confirm form submission if they have been through once
   // already.
   if (isset($form_state['storage']['confirm'])) {
@@ -325,9 +325,11 @@ function secure_notes_review($form, $form_state, $invitation_type) {
     $query->fields('t', array('token', 'email', 'expires', 'type'));
   }
   if ($invitation_type == 'view') {
-
     $query = db_select('secure_notes_view', 't')->extend('PagerDefault')->extend('TableSort');
     $query->fields('t', array('token', 'email', 'expires', 'nid'))->join('node', 'n', 'n.nid = t.nid');
+    if (!empty($nid)) {
+      $query->condition('t.nid', $nid, '=');
+    }
   }
   $tokens = $query->limit(50)->orderByHeader($header)->execute();
 
@@ -341,7 +343,7 @@ function secure_notes_review($form, $form_state, $invitation_type) {
     }
     else if (!empty($token['nid'])) {
       $node = node_load($token['nid']);
-      $options[$token['token']]['title'] = l($node->title, 'node/' . $node->nid); 
+      $options[$token['token']]['title'] = l($node->title, 'node/' . $node->nid);
     }
     $options[$token['token']] = $options[$token['token']] + array(
       'email' => isset($token['email']) ? check_plain($token['email']) : '',
@@ -349,7 +351,8 @@ function secure_notes_review($form, $form_state, $invitation_type) {
       'token' => $token['token'],
       'expires' => format_date($token['expires'], 'short'),
     );
-    // We use an abbriviaation in the delete link to avoid confusion. It would be weird to see a link such as secure-note/add/token/delete.
+    // We use an abbriviaation in the delete link to avoid confusion. It would
+    // be weird to see a link such as secure-note/add/token/delete.
     $link = array(
       'title' => t('delete'),
       'href' => 'secure-notes/' . $abrv . '/' . $token['token'] . '/delete',
