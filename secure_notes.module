@@ -297,16 +297,15 @@ function secure_notes_get_types() {
 
 /**
  * Implements hook_exit().
+ *
+ * Clean up view tokens on exit. It would be nice to do this on viewing but
+ * the menu system continues to check after the node is loaded which
+ * generating messages that are misleading.
  */
 function secure_notes_exit() {
   if (arg(0) == 'secure-notes' && arg(1) == 'view' && (arg(2))) {
-    // Clean up view tokens on exit. It would be nice to do this on viewing but
-    // the menu system continues to check after the node is loaded which
-    // generating messages that are misleading.
     $token = arg(2);
-    db_delete('secure_notes_view')
-      ->condition('token', $token, '=')
-      ->execute();
+    secure_notes_token_delete('view', $token); 
   }
 }
 
@@ -374,4 +373,20 @@ function secure_notes_node_access_records($node) {
     return $grants;
   }
   // Return nothing if the node is not marked as a secure note type.
+}
+
+/**
+ * Helper function to delete a secure note invitation.
+ */
+function secure_notes_token_delete($type, $tokens) {
+  if ($type == 'add') {
+    db_delete('secure_notes_create')
+      ->condition('token', $tokens, 'IN')
+      ->execute();
+  }
+  if ($type == 'view') {
+    db_delete('secure_notes_view')
+      ->condition('token', $tokens, 'IN')
+      ->execute();
+  }
 }
