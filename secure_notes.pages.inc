@@ -146,6 +146,7 @@ function secure_notes_view_link_invite($form, &$form_state) {
  * TODO
  */
 function secure_notes_add_link_invite_submit($form, &$form_state) {
+  global $user;
   $token = secure_notes_generate_token();
   $form_state['token'] = $token;
   $form_state['rebuild'] = TRUE;
@@ -158,6 +159,7 @@ function secure_notes_add_link_invite_submit($form, &$form_state) {
         'expires' => $expires,
         'type' => $form_state['values']['type'],
         'email' => $form_state['values']['email'],
+        'uid' => $user->uid,
       ))->execute();
   }
   catch (PDOException $e) {
@@ -209,6 +211,7 @@ function secure_notes_ajax_add_link_invite_submit($form, &$form_state) {
  * TODO
  */
 function secure_notes_view_link_invite_submit($form, &$form_state) {
+  global $user;
   $token = secure_notes_generate_token();
   $form_state['token'] = $token;
   $form_state['rebuild'] = TRUE;
@@ -221,6 +224,7 @@ function secure_notes_view_link_invite_submit($form, &$form_state) {
         'expires' => $expires,
         'email' => $form_state['values']['email'],
         'nid' => $form_state['values']['nid'],
+        'uid' => $user->uid,
       ))->execute();
   }
   catch (PDOException $e) {
@@ -331,12 +335,14 @@ function secure_notes_review($form, $form_state, $invitation_type, $nid = NULL) 
     $abrv = 'a';
   }
   if ($invitation_type == 'view') {
-    $header['title'] = array('data' => t('Title'), 'field' => 'n.title');
+    if (!$nid) {
+      $header['title'] = array('data' => t('Title'), 'field' => 'n.title');
+    }
     $abrv = 'v';
   }
   $header = $header + array(
     'email' => array('data' => t('Email'), 'field' => 't.email'),
-    //'generator' => array('data' => t('Invited By'), 'field' => 't.uid'),
+    'generator' => array('data' => t('Invited By'), 'field' => 't.uid'),
     'token' => array('data' => t('Token'), 'field' => 't.token'),
     'expires' => array('data' => t('Expires'), 'field' => 't.expires'),
     'operations' => t('Operations'),
@@ -344,11 +350,11 @@ function secure_notes_review($form, $form_state, $invitation_type, $nid = NULL) 
 
   if ($invitation_type == 'add') {
     $query = db_select('secure_notes_create', 't')->extend('PagerDefault')->extend('TableSort');
-    $query->fields('t', array('token', 'email', 'expires', 'type'));
+    $query->fields('t', array('token', 'uid', 'email', 'expires', 'type'));
   }
   if ($invitation_type == 'view') {
     $query = db_select('secure_notes_view', 't')->extend('PagerDefault')->extend('TableSort');
-    $query->fields('t', array('token', 'email', 'expires', 'nid'))->join('node', 'n', 'n.nid = t.nid');
+    $query->fields('t', array('token', 'uid', 'email', 'expires', 'nid'))->join('node', 'n', 'n.nid = t.nid');
     if (!empty($nid)) {
       $query->condition('t.nid', $nid, '=');
     }
@@ -369,7 +375,7 @@ function secure_notes_review($form, $form_state, $invitation_type, $nid = NULL) 
     }
     $options[$token['token']] = $options[$token['token']] + array(
       'email' => isset($token['email']) ? check_plain($token['email']) : '',
-      //'generator' => theme('username', array('account' => $token['uid'])),
+      'generator' => theme('username', array('account' => user_load($token['uid']))),
       'token' => $token['token'],
       'expires' => format_date($token['expires'], 'short'),
     );
