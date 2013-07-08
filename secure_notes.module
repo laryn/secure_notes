@@ -390,3 +390,32 @@ function secure_notes_token_delete($type, $tokens) {
       ->execute();
   }
 }
+
+/**
+ * Implements hook_mail().
+ *
+ * Provide an email template for sending the secure note invitation directly to
+ * a user.
+ */
+function secure_notes_mail($key, &$message, $params) {
+  global $user;
+  global $base_url;
+
+  $options = array(
+    'langcode' => $message['language']->language,
+  );
+
+  switch ($key) {
+    case 'secure_notes_view':
+      $message['subject'] = t('Secure note pickup from @site-name (@url)', array('@site-name' => variable_get('site_name', 'Drupal'), '@url' => $base_url), $options);
+      $message['body'][] = t('@name wants to securly share sensitive information with you.', array('@name' => $user->name), $options);
+      $message['body'][] = check_plain($params['message']);
+      break;
+
+    case 'secure_notes_add':
+      $message['subject'] = t('Secure note invitation from @site-name (@url)', array('@site-name' => variable_get('site_name', 'Drupal'), '@url' => $base_url), $options);
+      $message['body'][] = t('@name has invited you to wants to securly share information.', array('@name' => $user->name), $options);
+      $message['body'][] = check_plain($params['message']);
+      break;
+  }
+}

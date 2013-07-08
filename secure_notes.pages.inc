@@ -170,6 +170,28 @@ function secure_notes_add_link_invite_submit($form, &$form_state) {
       return;
     }
   }
+  // If the box is checked. Attempt to send message to the user.
+  if ($form_state['values']['email_send']) {
+    $message = $form_state['values']['email_message'];
+    $module = 'secure_notes';
+    $key = 'secure_notes_add';
+    // Specify 'to' and 'from' addresses.
+    $to = $form_values['email'];
+    $from = variable_get('site_mail', 'admin@example.com');
+
+    // Load the message into params
+    $params = $form_values;
+    $language = language_default();
+    $send = TRUE;
+    // Send the mail, and check for success.
+    $result = drupal_mail($module, $key, $to, $language, $params, $from, $send);
+    if ($result['result'] == TRUE) {
+      drupal_set_message(t('Your message has been sent.'));
+    }
+    else {
+      drupal_set_message(t('There was a problem sending your message and it was not sent.'), 'error');
+    }
+  }
   drupal_set_message(t('A secure note creation token has been generated and stored. It will expire in @hours hours.', array('@hours' => $expires_hours)));
 }
 
