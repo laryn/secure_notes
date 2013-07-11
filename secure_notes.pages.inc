@@ -107,12 +107,6 @@ function secure_notes_view_link_invite($form, &$form_state) {
     '#type' => 'textfield',
   );
 
-  $form['email'] = array(
-    '#title' => t('Email'),
-    '#description' => t('The email address of the person that will create the note.'),
-    '#type' => 'textfield',
-  );
-
   $form['email_send'] = array(
     '#title' => t('Send email'),
     '#description' => t('If checked the system will automatically email the user for you using the text below.'),
