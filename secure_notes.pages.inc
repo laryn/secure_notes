@@ -72,6 +72,7 @@ function secure_notes_add_link_invite($form, &$form_state) {
       'callback' => 'secure_notes_ajax_add_link_invite_submit',
       'wrapper' => 'token',
     ),
+    '#validate' => array('secure_notes_invite_validate'),
     '#submit' => array('secure_notes_add_link_invite_submit'),
   );
 
@@ -140,10 +141,30 @@ function secure_notes_view_link_invite($form, &$form_state) {
       'callback' => 'secure_notes_ajax_view_link_invite_submit',
       'wrapper' => 'token',
     ),
+    '#validate' => array('secure_notes_invite_validate'),
     '#submit' => array('secure_notes_view_link_invite_submit'),
   );
 
   return $form;
+}
+
+/**
+ * Validation function for secure notes invitations forms.
+ *
+ * @see TODO
+ * @see TODO
+ */
+function secure_notes_invite_validate($form, &$form_state) {
+  if ($form_state['values']['email_send']) {
+    $message = $form_state['values']['email_message'];
+    $email = $form_state['values']['email'];
+    if (!valid_email_address($email)) {
+      form_set_error('email', 'The email address is invalid.');
+    }
+    if (strpos($message, '[invite-token]') === FALSE) {
+      form_set_error('email_message', 'The invite token [invite-token] was not included in the message.');
+    }
+  }
 }
 
 /**
