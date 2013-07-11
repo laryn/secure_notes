@@ -46,6 +46,24 @@ function secure_notes_admin_settings_form() {
     '#default_value' => $default_expire,
   );
 
+  $default_add_message = secure_notes_default_email_message('add');
+
+  $default_view_message = secure_notes_default_email_message('view');
+
+  $form['secure_notes_default_message_add'] = array(
+    '#title' => t('Default Email Message for Adding a Note'),
+    '#description' => t('The default message that will be prefilled when creating a new secure note invitation to add content. Be sure to include the [invite-token]. You can also add the [username] token.'),
+    '#type' => 'textarea',
+    '#default_value' => check_plain(variable_get('secure_notes_default_message_add', $default_add_message)),
+  );
+
+  $form['secure_notes_default_message_view'] = array(
+    '#title' => t('Default Email Message for Viewing a Note'),
+    '#description' => t('The default message that will be prefilled when creating a new secure note invitation to view content. Be sure to include the [invite-token]. You can also add the [username] token.'),
+    '#type' => 'textarea',
+    '#default_value' => check_plain(variable_get('secure_notes_default_message_view', $default_view_message)),
+  );
+
   $form = system_settings_form($form);
   $form['#submit'][] = 'secure_notes_secure_notes_admin_settings_additional_submit';
   return $form;

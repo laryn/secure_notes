@@ -408,14 +408,25 @@ function secure_notes_mail($key, &$message, $params) {
   switch ($key) {
     case 'secure_notes_view':
       $message['subject'] = t('Secure note pickup from @site-name (@url)', array('@site-name' => variable_get('site_name', 'Drupal'), '@url' => $base_url), $options);
-      $message['body'][] = t('@name wants to securly share sensitive information with you.', array('@name' => $user->name), $options);
       $message['body'][] = check_plain($params['message']);
       break;
 
     case 'secure_notes_add':
       $message['subject'] = t('Secure note invitation from @site-name (@url)', array('@site-name' => variable_get('site_name', 'Drupal'), '@url' => $base_url), $options);
-      $message['body'][] = t('@name has invited you to wants to securly share information.', array('@name' => $user->name), $options);
       $message['body'][] = check_plain($params['message']);
       break;
   }
+}
+
+function secure_notes_default_email_message($type) {
+  switch ($type) {
+    case 'add':
+      $message = t('[username] has invited you to securly share information. Please use the link below to drop off the information on our secure site. If you do not know this user or this message has been received in error, then do not click this link. Otherwise click the link and follow the directions on the page to safely share your data. You will only be allowed to use this link once: [invite-token]');
+      return $message;
+    case 'view':
+      $message = t('[username] wants to securly share information with you. Please use the link to view the information. If you do not know this user or this message has been received in error, then do not click this link. Otherwise click the link and follow the directions on the page to safely retrieve the data. You will only be allowed to use this link once: [invite-token]');
+      return $message;
+  }
+
+
 }

@@ -50,10 +50,12 @@ function secure_notes_add_link_invite($form, &$form_state) {
     '#type' => 'checkbox',
   );
 
+  $default_message = secure_notes_default_email_message('view');
   $form['email_message'] = array(
     '#title' => t('Email Message'),
     '#description' => t('The following email will be automatically send to the email address above. You may alter this message but make sure to include the [invite-token] somewhere in the message or else your invitation will not be useful at all.'),
     '#type' => 'textarea',
+    '#default_value' => check_plain(variable_get('secure_notes_default_message_add', $default_message)),
   );
 
   $form['token'] = array(
@@ -116,10 +118,12 @@ function secure_notes_view_link_invite($form, &$form_state) {
     '#type' => 'checkbox',
   );
 
+  $default_message = secure_notes_default_email_message('view');
   $form['email_message'] = array(
     '#title' => t('Email Message'),
     '#description' => t('The following email will be automatically send to the email address above. You may alter this message but make sure to include the [invite-token] somewhere in the message or else your invitation will not be useful at all.'),
     '#type' => 'textarea',
+    '#default_value' => check_plain(variable_get('secure_notes_default_message_view', $default_message)),
   );
 
   $form['token'] = array(
