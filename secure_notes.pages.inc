@@ -92,7 +92,7 @@ function secure_notes_view_link_invite($form, &$form_state) {
     $nid = $form_state['values']['nid'];
   }
 
-  $token = isset($form_state['token']) ? 'Secure note creation link: ' . $base_url . '/secure-notes/add/' . $form_state['token'] : '';
+  $token = isset($form_state['token']) ? 'Secure note creation link: ' . $base_url . '/secure-notes/view/' . $form_state['token'] : '';
 
   $form = array();
 
