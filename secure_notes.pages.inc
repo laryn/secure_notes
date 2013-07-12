@@ -32,6 +32,11 @@ function secure_notes_add_link_invite($form, &$form_state) {
   $form = array();
 
   $form['type'] = array(
+    '#type' => 'value',
+    '#value' => 'add',
+  );
+
+  $form['node_type'] = array(
     '#title' => t('Node Type'),
     '#description' => t('What type of node is the user being invited to create?'),
     '#type' => 'select',
@@ -73,7 +78,7 @@ function secure_notes_add_link_invite($form, &$form_state) {
       'wrapper' => 'token',
     ),
     '#validate' => array('secure_notes_invite_validate'),
-    '#submit' => array('secure_notes_add_link_invite_submit'),
+    '#submit' => array('secure_notes_invite_submit'),
   );
 
   return $form;
@@ -95,6 +100,11 @@ function secure_notes_view_link_invite($form, &$form_state) {
   $token = isset($form_state['token']) ? 'Secure note creation link: ' . $base_url . '/secure-notes/view/' . $form_state['token'] : '';
 
   $form = array();
+
+  $form['type'] = array(
+    '#type' => 'value',
+    '#value' => 'view',
+  );
 
   $form['nid'] = array(
     '#type' => 'value',
@@ -136,7 +146,7 @@ function secure_notes_view_link_invite($form, &$form_state) {
       'wrapper' => 'token',
     ),
     '#validate' => array('secure_notes_invite_validate'),
-    '#submit' => array('secure_notes_view_link_invite_submit'),
+    '#submit' => array('secure_notes_invite_submit'),
   );
 
   return $form;
@@ -164,22 +174,40 @@ function secure_notes_invite_validate($form, &$form_state) {
 /**
  * TODO
  */
-function secure_notes_add_link_invite_submit($form, &$form_state) {
+function secure_notes_invite_submit($form, &$form_state) {
   global $user;
+  $type = $form_state['values']['type'];
   $token = secure_notes_generate_token();
   $form_state['token'] = $token;
   $form_state['rebuild'] = TRUE;
   $expires_hours = variable_get('secure_notes_default_expiration', 48);
   $expires = REQUEST_TIME + $expires_hours * 60 *60;
+
+  $fields = array(
+    'token' => $token,
+    'expires' => $expires,
+    'email' => $form_state['values']['email'],
+    'uid' => $user->uid,
+  );
+
+  switch ($type) {
+    case 'view':
+      $table = 'secure_notes_view';
+      $key = 'secure_notes_view';
+      $status_message = t('An token to view a secure note has been generated and stored. It will expire in @hours hours.', array('@hours' => $expires_hours));
+      $fields['nid'] = $form_state['values']['nid'];
+      break;
+
+    case 'add':
+      $table = 'secure_notes_create';
+      $key = 'secure_notes_add';
+      $status_message = t('A secure note creation token has been generated and stored. It will expire in @hours hours.', array('@hours' => $expires_hours));
+      $fields['type'] = $form_state['values']['node_type'];
+      break;
+  }
+
   try {
-    db_insert('secure_notes_create')
-      ->fields(array(
-        'token' => $token,
-        'expires' => $expires,
-        'type' => $form_state['values']['type'],
-        'email' => $form_state['values']['email'],
-        'uid' => $user->uid,
-      ))->execute();
+    db_insert($table)->fields($fields)->execute();
   }
   catch (PDOException $e) {
     if ($e->errorInfo[1] != 1062) {
@@ -199,7 +227,6 @@ function secure_notes_add_link_invite_submit($form, &$form_state) {
     $message = str_replace('[username]', $user->name, $message);
 
     $module = 'secure_notes';
-    $key = 'secure_notes_add';
     // Specify 'to' and 'from' addresses.
     $to = $form_state['values']['email'];
     $from = variable_get('site_mail', 'admin@example.com');
@@ -218,11 +245,11 @@ function secure_notes_add_link_invite_submit($form, &$form_state) {
       drupal_set_message(t('There was a problem sending your message and it was not sent.'), 'error');
     }
   }
-  drupal_set_message(t('A secure note creation token has been generated and stored. It will expire in @hours hours.', array('@hours' => $expires_hours)));
+  drupal_set_message($status_message);
 }
 
 /**
- * Submit handler for token creation.
+ * Ajax submit handler for token creation.
  */
 function secure_notes_ajax_add_link_invite_submit($form, &$form_state) {
   global $base_url;
@@ -232,63 +259,7 @@ function secure_notes_ajax_add_link_invite_submit($form, &$form_state) {
 }
 
 /**
- * TODO
- */
-function secure_notes_view_link_invite_submit($form, &$form_state) {
-  global $user;
-  $token = secure_notes_generate_token();
-  $form_state['token'] = $token;
-  $form_state['rebuild'] = TRUE;
-  $expires_hours = variable_get('secure_notes_default_expiration', 48);
-  $expires = REQUEST_TIME + $expires_hours * 60 *60;
-  try {
-    db_insert('secure_notes_view')
-      ->fields(array(
-        'token' => $token,
-        'expires' => $expires,
-        'email' => $form_state['values']['email'],
-        'nid' => $form_state['values']['nid'],
-        'uid' => $user->uid,
-      ))->execute();
-  }
-  catch (PDOException $e) {
-    if ($e->errorInfo[1] != 1062) {
-      throw $e;
-    }
-    else {
-      $form_state['token'] = NULL;
-      drupal_set_message(t('You have just experienced a rare and amazing occurance. A cryptographic collision has occured! Do not fret, nothing was harmed. While this is really rare and interesting it just means that we need you to generate another token. Submit the form again to leave this strange paralell universe.'), 'error');
-      return;
-    }
-  }
-  // If the box is checked. Attempt to send message to the user.
-  if ($form_state['values']['email_send']) {
-    $message = $form_state['values']['email_message'];
-    $module = 'secure_notes';
-    $key = 'secure_notes_view';
-    // Specify 'to' and 'from' addresses.
-    $to = $form_state['values']['email'];
-    $from = variable_get('site_mail', 'admin@example.com');
-
-    // Load the message into params
-    $params = array();
-    $params['message'] = $form_state['values']['email_message'];
-    $language = language_default();
-    $send = TRUE;
-    // Send the mail, and check for success.
-    $result = drupal_mail($module, $key, $to, $language, $params, $from, $send);
-    if ($result['result'] == TRUE) {
-      drupal_set_message(t('Your message has been sent to @to. Please review this email address is correct. If this was done in error, revoke the invitation.', array('@to' => $to)));
-    }
-    else {
-      drupal_set_message(t('There was a problem sending your message and it was not sent.'), 'error');
-    }
-  }
-  drupal_set_message(t('A secure note creation token has been generated and stored. It will expire in @hours hours.', array('@hours' => $expires_hours)));
-}
-
-/**
- * Submit handler for token creation.
+ * Ajax submit handler for token creation.
  */
 function secure_notes_ajax_view_link_invite_submit($form, &$form_state) {
   global $base_url;
@@ -296,7 +267,6 @@ function secure_notes_ajax_view_link_invite_submit($form, &$form_state) {
   $element['#markup'] = 'Secure note view link: ' . $base_url . '/secure-notes/view/' . $form_state['token'];
   return $element;
 }
-
 
 /**
  * TODO
