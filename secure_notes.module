@@ -404,8 +404,7 @@ function secure_notes_node_access_records($node) {
  * Helper function to delete a secure note invitation.
  *
  * @param string $type - The type of token to delete.
- * @param mixed $tokens - The tokens to be deleted supplied as an array or a
- *   single token supplied as a string.
+ * @param array $tokens - The tokens to be deleted supplied as an array.
  */
 function secure_notes_token_delete($type, $tokens) {
   if ($type == 'add') {
