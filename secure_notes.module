@@ -304,7 +304,7 @@ function secure_notes_get_types() {
  */
 function secure_notes_exit() {
   if (arg(0) == 'secure-notes' && arg(1) == 'view' && (arg(2))) {
-    $token = arg(2);
+    $token = array(arg(2));
     secure_notes_token_delete('view', $token); 
   }
 }
