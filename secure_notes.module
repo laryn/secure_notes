@@ -464,3 +464,17 @@ function secure_notes_default_email_message($type) {
       return $message;
   }
 }
+
+/**
+ * Implements hook_cron().
+ *
+ * Clean up secure note tokens that have expried.
+ */
+function secure_notes_cron() {
+  db_delete('secure_notes_create')
+    ->condition('expires', REQUEST_TIME, '<')
+    ->execute();
+  db_delete('secure_notes_view')
+    ->condition('expires', REQUEST_TIME, '<')
+    ->execute();
+}
