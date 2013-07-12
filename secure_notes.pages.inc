@@ -21,7 +21,8 @@ function secure_notes_generate_token($time = REQUEST_TIME) {
 }
 
 /**
- * TODO
+ * Form builder function. Generates the form that allows a user to generate an
+ * invitation to add a secure note.
  */
 function secure_notes_add_link_invite($form, &$form_state) {
   global $base_url;
@@ -93,7 +94,8 @@ function secure_notes_add_link_invite($form, &$form_state) {
 }
 
 /**
- * TODO
+ * Form builder function. Generates the form that allows a user to generate an
+ * invitation to view an existing secure note.
  */
 function secure_notes_view_link_invite($form, &$form_state) {
   global $base_url;
@@ -272,7 +274,8 @@ function secure_notes_ajax_invite_submit($form, &$form_state) {
 }
 
 /**
- * TODO
+ * Render the page that allows the token holder to create a secure note. We load
+ * the standard node form onto this page.
  */
 function secure_notes_render_add_form($token) {
   $type = db_select('secure_notes_create', 'snc')
@@ -290,7 +293,7 @@ function secure_notes_render_add_form($token) {
 }
 
 /**
- * TODO
+ * Load a node a display it to a token holder.
  */
 function secure_notes_render_node_view($token) {
   $nid = db_select('secure_notes_view', 'snv')
@@ -305,7 +308,10 @@ function secure_notes_render_node_view($token) {
 }
 
 /**
- * TODO
+ * Custom submission callback called on node submit when submitted though the
+ * secure note add page. Provide redirection since the token holder should not
+ * be allowed to view the node after it is created and remove the now used
+ * token from the system.
  */
 function secure_notes_node_form_submit($form, &$form_state) {
   $item = menu_get_item();
@@ -467,12 +473,18 @@ function secure_notes_delete_confirm_submit($form, &$form_state) {
   }
 }
 
+/**
+ * Validation callback for the secure notes managment pages.
+ */
 function secure_notes_manage_validate($form, &$form_state) {
   if (!is_array($form_state['values']['tokens']) || !count(array_filter($form_state['values']['tokens']))) {
     form_set_error('', t('No items selected.'));
   }
 }
 
+/**
+ * Submission callback for the secure notes managment pages.
+ */
 function secure_notes_manage_submit($form, &$form_state) {
   if (empty($form_state['storage']['confirm'])) {
     $tokens = array_filter($form_state['values']['tokens']);

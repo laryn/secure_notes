@@ -220,7 +220,12 @@ function secure_notes_add_token_valid($token) {
 }
 
 /**
- * TODO
+ * @todo - combine this with secure_notes_add_token_valid().
+ * Determine if a token to view a secure note is valid.
+ *
+ * @param string $token - The token to verify.
+ *
+ * @return TRUE if the token is valid or FALSE if it is not.
  */
 function secure_notes_view_token_valid($token) {
   $result = db_select('secure_notes_view', 'snv')
@@ -236,7 +241,7 @@ function secure_notes_view_token_valid($token) {
 }
 
 /**
- *TODO
+ * Access callback to see if a user has access to a secure note.
  */
 function secure_notes_node_invite_access($nid, $perm) {
   global $user;
