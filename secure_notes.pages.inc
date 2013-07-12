@@ -82,7 +82,7 @@ function secure_notes_add_link_invite($form, &$form_state) {
     '#type' => 'submit',
     '#value' => 'Generate Link',
     '#ajax' => array(
-      'callback' => 'secure_notes_ajax_add_link_invite_submit',
+      'callback' => 'secure_notes_ajax_invite_submit',
       'wrapper' => 'token',
     ),
     '#validate' => array('secure_notes_invite_validate'),
@@ -150,7 +150,7 @@ function secure_notes_view_link_invite($form, &$form_state) {
     '#type' => 'submit',
     '#value' => 'Generate Link',
     '#ajax' => array(
-      'callback' => 'secure_notes_ajax_view_link_invite_submit',
+      'callback' => 'secure_notes_ajax_invite_submit',
       'wrapper' => 'token',
     ),
     '#validate' => array('secure_notes_invite_validate'),
@@ -187,9 +187,12 @@ function secure_notes_invite_validate($form, &$form_state) {
  */
 function secure_notes_invite_submit($form, &$form_state) {
   global $user;
+  global $base_url;
   $type = $form_state['values']['type'];
   $token = secure_notes_generate_token();
+  $token_link = $base_url . '/secure-notes/' . $form_state['values']['type'] . '/' . $token;
   $form_state['token'] = $token;
+  $form_state['token_link'] = $token_link;
   $form_state['rebuild'] = TRUE;
   $expires_hours = variable_get('secure_notes_default_expiration', 48);
   $expires = REQUEST_TIME + $expires_hours * 60 *60;
@@ -234,7 +237,7 @@ function secure_notes_invite_submit($form, &$form_state) {
   if ($form_state['values']['email_send']) {
     $message = $form_state['values']['email_message'];
     // Perform token replacement on the message.
-    $message = str_replace('[invite-token]', $token, $message);
+    $message = str_replace('[invite-token]', $token_link, $message);
     $message = str_replace('[username]', $user->name, $message);
 
     $module = 'secure_notes';
@@ -262,20 +265,9 @@ function secure_notes_invite_submit($form, &$form_state) {
 /**
  * Ajax submit handler for token creation.
  */
-function secure_notes_ajax_add_link_invite_submit($form, &$form_state) {
-  global $base_url;
+function secure_notes_ajax_invite_submit($form, &$form_state) {
   $element = $form['token'];
-  $element['#markup'] = 'Secure note creation link: ' . $base_url . '/secure-notes/add/' . $form_state['token'];
-  return $element;
-}
-
-/**
- * Ajax submit handler for token creation.
- */
-function secure_notes_ajax_view_link_invite_submit($form, &$form_state) {
-  global $base_url;
-  $element = $form['token'];
-  $element['#markup'] = 'Secure note view link: ' . $base_url . '/secure-notes/view/' . $form_state['token'];
+  $element['#markup'] = 'Secure note link: ' . $form_state['token_link'];
   return $element;
 }
 
