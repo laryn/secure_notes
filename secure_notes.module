@@ -377,6 +377,9 @@ function secure_notes_node_access_records($node) {
 
 /**
  * Helper function to delete a secure note invitation.
+ *
+ * @param string $type - The type of token to delete.
+ * @param mixed $tokens - The tokens to be deleted supplied as an array or a single token supplied as a string.
  */
 function secure_notes_token_delete($type, $tokens) {
   if ($type == 'add') {
@@ -418,6 +421,13 @@ function secure_notes_mail($key, &$message, $params) {
   }
 }
 
+/**
+ * Helper function to provide default messages for sent emails.
+ *
+ * @param string $type - The type of token for which a message should be send.
+ *
+ * @return A translated string to be used as the template for an email message.
+ */
 function secure_notes_default_email_message($type) {
   switch ($type) {
     case 'add':
@@ -427,6 +437,4 @@ function secure_notes_default_email_message($type) {
       $message = t('[username] wants to securly share information with you. Please use the link to view the information. If you do not know this user or this message has been received in error, then do not click this link. Otherwise click the link and follow the directions on the page to safely retrieve the data. You will only be allowed to use this link once: [invite-token]');
       return $message;
   }
-
-
 }
