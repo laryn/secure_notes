@@ -52,16 +52,21 @@ function secure_notes_add_link_invite($form, &$form_state) {
     '#options' => $options,
   );
 
-  $form['email'] = array(
-    '#title' => t('Email'),
-    '#description' => t('The email address of the person that will create the note.'),
-    '#type' => 'textfield',
-  );
-
   $form['email_send'] = array(
     '#title' => t('Send email'),
     '#description' => t('If checked the system will automatically email the user for you using the text below.'),
     '#type' => 'checkbox',
+  );
+
+  $form['email'] = array(
+    '#title' => t('Email'),
+    '#description' => t('The email address of the person that will create the note.'),
+    '#type' => 'textfield',
+    '#states' => array(
+      'visible' => array(
+        ':input[name="email_send"]' => array('checked' => TRUE),
+      ),
+    ),
   );
 
   $default_message = secure_notes_default_email_message('view');
@@ -70,6 +75,11 @@ function secure_notes_add_link_invite($form, &$form_state) {
     '#description' => t('The following email will be automatically send to the email address above. You may alter this message but make sure to include the [invite-token] somewhere in the message or else your invitation will not be useful at all.'),
     '#type' => 'textarea',
     '#default_value' => check_plain(variable_get('secure_notes_default_message_add', $default_message)),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="email_send"]' => array('checked' => TRUE),
+      ),
+    ),
   );
 
   $form['token'] = array(
@@ -121,16 +131,21 @@ function secure_notes_view_link_invite($form, &$form_state) {
     '#value' => $nid,
   );
 
-  $form['email'] = array(
-    '#title' => t('Email'),
-    '#description' => t('The email address of the person that will create the note.'),
-    '#type' => 'textfield',
-  );
-
   $form['email_send'] = array(
     '#title' => t('Send email'),
     '#description' => t('If checked the system will automatically email the user for you using the text below.'),
     '#type' => 'checkbox',
+  );
+
+  $form['email'] = array(
+    '#title' => t('Email'),
+    '#description' => t('The email address of the person that will create the note.'),
+    '#type' => 'textfield',
+    '#states' => array(
+      'visible' => array(
+        ':input[name="email_send"]' => array('checked' => TRUE),
+      ),
+    ),
   );
 
   $default_message = secure_notes_default_email_message('view');
@@ -139,6 +154,11 @@ function secure_notes_view_link_invite($form, &$form_state) {
     '#description' => t('The following email will be automatically send to the email address above. You may alter this message but make sure to include the [invite-token] somewhere in the message or else your invitation will not be useful at all.'),
     '#type' => 'textarea',
     '#default_value' => check_plain(variable_get('secure_notes_default_message_view', $default_message)),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="email_send"]' => array('checked' => TRUE),
+      ),
+    ),
   );
 
   $form['token'] = array(
