@@ -316,17 +316,7 @@ function secure_notes_node_form_submit($form, &$form_state) {
 }
 
 /**
- * TODO
- */
-function secure_notes_form_node_form_alter(&$form, &$form_state) {
-  $menu = menu_get_item();
-  if ($menu['path'] == 'secure-notes/add/%') {
-    $form['actions']['submit']['#submit'][] = 'secure_notes_node_form_submit';
-  }
-}
-
-/**
- * TODO
+ * Provide an administration page to review secure notes.
  */
 function secure_notes_review($form, $form_state, $invitation_type, $nid = NULL) {
   // Direct them to the confirm form submission if they have been through once
