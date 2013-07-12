@@ -2,7 +2,9 @@
 
 /**
  * @file
- * TODO
+ * Secure Notes module provides functionality to securly share sensitive
+ * information. Hooks function definitions for secure notes to interact with
+ * drupal and common functions.
  */
 
 /**
@@ -305,7 +307,7 @@ function secure_notes_get_types() {
 function secure_notes_exit() {
   if (arg(0) == 'secure-notes' && arg(1) == 'view' && (arg(2))) {
     $token = array(arg(2));
-    secure_notes_token_delete('view', $token); 
+    secure_notes_token_delete('view', $token);
   }
 }
 
@@ -333,7 +335,8 @@ function secure_notes_node_access($node, $op, $account) {
  */
 function secure_notes_node_grants($account, $op) {
   $grants = array();
-  // If the user is allowed to view or edit notes then supply the appropriate grants.
+  // If the user is allowed to view or edit notes then supply the appropriate
+  // grants.
   if ($op == 'view' && user_access('secure notes node view', $account)) {
     $grants['secure_notes_view'] = array(1);
   }
@@ -379,7 +382,8 @@ function secure_notes_node_access_records($node) {
  * Helper function to delete a secure note invitation.
  *
  * @param string $type - The type of token to delete.
- * @param mixed $tokens - The tokens to be deleted supplied as an array or a single token supplied as a string.
+ * @param mixed $tokens - The tokens to be deleted supplied as an array or a
+ *   single token supplied as a string.
  */
 function secure_notes_token_delete($type, $tokens) {
   if ($type == 'add') {

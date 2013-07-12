@@ -1,6 +1,14 @@
 <?php
 
 /**
+ * @file
+ * Page and form generation functions for normal interaction with secure notes
+ * module. Provide forms to generate and view secure notes as well as submission
+ * and validation of these forms. Provide page callbacks for the viewing of
+ * secure note nodes as well as submitting new secure note nodes.
+ */
+
+/**
  * Generate a secure token.
  */
 function secure_notes_generate_token($time = REQUEST_TIME) {
@@ -155,8 +163,8 @@ function secure_notes_view_link_invite($form, &$form_state) {
 /**
  * Validation function for secure notes invitations forms.
  *
- * @see TODO
- * @see TODO
+ * @see secure_notes_view_link_invite().
+ * @see secure_notes_add_link_invite().
  */
 function secure_notes_invite_validate($form, &$form_state) {
   if ($form_state['values']['email_send']) {
@@ -172,7 +180,10 @@ function secure_notes_invite_validate($form, &$form_state) {
 }
 
 /**
- * TODO
+ * Submission function for secure notes invitations forms.
+ *
+ * @see secure_notes_view_link_invite().
+ * @see secure_notes_add_link_invite().
  */
 function secure_notes_invite_submit($form, &$form_state) {
   global $user;
