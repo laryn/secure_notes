@@ -97,6 +97,7 @@ function secure_notes_schema() {
 function secure_notes_install() {
   module_load_include('inc', 'node', 'content_types');
 
+  // @todo disable comments and other normal node stuff on notes.
   $type = array(
     'type' => 'secure_note',
     'name' => st('Secure Note'),
