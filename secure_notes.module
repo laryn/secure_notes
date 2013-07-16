@@ -456,10 +456,10 @@ function secure_notes_mail($key, &$message, $params) {
 function secure_notes_default_email_message($type) {
   switch ($type) {
     case 'add':
-      $message = t('[username] has invited you to securly share information. Please use the link below to drop off the information on our secure site. If you do not know this user or this message has been received in error, then do not click this link. Otherwise click the link and follow the directions on the page to safely share your data. You will only be allowed to use this link once: [invite-token]');
+      $message = t('[username] has invited you to securely share information. Please use the link below to drop off the information on our secure site. If you do not know this user or this message has been received in error, then do not click this link. Otherwise click the link and follow the directions on the page to safely share your data. You will only be allowed to use this link once: [invite-token]');
       return $message;
     case 'view':
-      $message = t('[username] wants to securly share information with you. Please use the link to view the information. If you do not know this user or this message has been received in error, then do not click this link. Otherwise click the link and follow the directions on the page to safely retrieve the data. You will only be allowed to use this link once: [invite-token]');
+      $message = t('[username] wants to securely share information with you. Please use the link to view the information. If you do not know this user or this message has been received in error, then do not click this link. Otherwise click the link and follow the directions on the page to safely retrieve the data. You will only be allowed to use this link once: [invite-token]');
       return $message;
   }
 }
