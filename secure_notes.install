@@ -5,7 +5,9 @@
  */
 
 /**
+ * Implements hook_schema().
  *
+ * Build the secure notes tables.
  */
 function secure_notes_schema() {
   $schema = array();
@@ -88,7 +90,9 @@ function secure_notes_schema() {
 }
 
 /**
+ * Implements hook_install().
  *
+ * Create a new content type as the default storage mechanism for secure notes.
  */
 function secure_notes_install() {
   module_load_include('inc', 'node', 'content_types');
