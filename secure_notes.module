@@ -66,7 +66,7 @@ function secure_notes_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('secure_notes_review', 'view', 1),
     'access callback' => 'secure_notes_review_access',
-    'access arguments' => array('view'),
+    'access arguments' => array('view', NULL, 1),
     'file' => 'secure_notes.pages.inc',
   );
   $items['admin/content/secure-notes'] = array(
@@ -265,9 +265,19 @@ function secure_notes_node_invite_access($nid, $perm) {
  * Access callback to determine if a user should be allowed to view secure notes
  * invitation management pages.
  */
-function secure_notes_review_access($invitation_type = NULL, $abrv = NULL) {
+function secure_notes_review_access($invitation_type = NULL, $abrv = NULL, $nid = NULL) {
   global $user;
   $access = FALSE;
+
+  // First decide if this is a node page and if the type even allows secure
+  // notes. Fail fast if it is not.
+  if ($nid) {
+    $node = node_load($nid);
+    if (!$node || !secure_notes_type_enabled($node->type)) {
+      return FALSE;
+    }
+  }
+
   if ($abrv == 'a') {
     $invitation_type = 'add';
   }
