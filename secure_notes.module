@@ -17,7 +17,7 @@ function secure_notes_menu() {
     'description' => 'Administer Secure Notes Settings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('secure_notes_admin_settings_form'),
-    'access arguments' => array('manage secure notes settings'),
+    'access arguments' => array('secure notes manage settings'),
     'file' => 'secure_notes.admin.inc',
   );
   $items['secure-notes/add/%'] = array(
@@ -116,6 +116,11 @@ function secure_notes_menu() {
  */
 function secure_notes_permission() {
   return array(
+    'secure notes manage settings' => array(
+      'description' => t('Manage sitewide secure notes settings.'),
+      'title' => t('Manage secure note settings'),
+      'restrict access' => TRUE,
+    ),
     'secure notes invite add' => array(
       'description' => t('Create link invitations to allow the creation of new secure notes.'),
       'title' => t('Generate secure note add invitations'),

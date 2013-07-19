@@ -337,7 +337,6 @@ function secure_notes_node_form_submit($form, &$form_state) {
   $item = menu_get_item();
   $token = array($item['page_arguments'][0]);
   secure_notes_token_delete('add', $token);
-  // TODO make this a real redirect.
   $form_state['redirect'] = '<front>';
 }
 
