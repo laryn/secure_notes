@@ -34,9 +34,7 @@ function secure_notes_add_link_invite($form, &$form_state) {
       unset($options[$key]);
     }
     else {
-      if (!isset($options[$key])) {
-        $options[$key] = $types[$key];
-      }
+      $options[$key] = $types[$key];
     }
   }
 
