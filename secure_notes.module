@@ -514,4 +514,12 @@ function secure_notes_node_type_delete($info) {
   db_delete('secure_notes_create')
     ->condition('type', $info->type, '=')
     ->execute();
+
+  // In addition, remove the type from the array();
+  $types = secure_notes_get_types();
+  if (isset($types[$info->type])) {
+    unset($types[$info->type]);
+  }
+  variable_set('secure_notes_types', $types);
+}
 }
