@@ -492,3 +492,26 @@ function secure_notes_cron() {
     ->condition('expires', REQUEST_TIME, '<')
     ->execute();
 }
+
+/**
+ * Implements hook_node_delete().
+ *
+ * Clean up secure note tokens associated with a node when that node is deleted.
+ */
+function secure_notes_node_delete($node) {
+  db_delete('secure_notes_view')
+    ->condition('nid', $node->nid, '=')
+    ->execute();
+}
+
+/**
+ * Implements hook_node_type_delete().
+ *
+ * Clean up secure note tokens for creating a node of a certain type if that
+ * type is removed.
+ */
+function secure_notes_node_type_delete($info) {
+  db_delete('secure_notes_create')
+    ->condition('type', $info->type, '=')
+    ->execute();
+}
