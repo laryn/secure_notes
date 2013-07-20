@@ -200,6 +200,22 @@ function secure_notes_menu_local_tasks_alter(&$data, $router_item, $root_path) {
 function secure_notes_form_node_form_alter(&$form, &$form_state) {
   $menu = menu_get_item();
   if ($menu['path'] == 'secure-notes/add/%') {
+    // Look up the inviter's user id and supply that so that the new node can be
+    // owned by that user.
+    $token = arg(2);
+    $uid = db_select('secure_notes_create', 'snc')
+      ->fields('snc', array('uid'))
+      ->condition('snc.token', $token, '=')
+      ->execute()
+      ->fetchField();
+    // Make sure we set the uid to a valid number to avoid PDO errors on node
+    // save in case this select returns nothing even though this should not ever
+    // happen.
+    $uid = !empty($uid) ? $uid : 0;
+    $form['secure_note_author'] = array(
+      '#type' => 'value',
+      '#value' => $uid,
+    );
     $form['actions']['submit']['#submit'][] = 'secure_notes_node_form_submit';
   }
 }
@@ -522,4 +538,14 @@ function secure_notes_node_type_delete($info) {
   }
   variable_set('secure_notes_types', $types);
 }
+
+/**
+ * Implements hook_node_presave().
+ *
+ * On saving a node, set the user id to the secure note inviter.
+ */
+function secure_notes_node_presave($node) {
+  // If we have a secure note inviter value set, then set the uid of the node to
+  // that user otherwise we just use whatever is already there.
+  $node->uid = isset($node->secure_note_author) ? $node->secure_note_author : $node->uid;
 }
