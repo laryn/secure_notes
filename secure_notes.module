@@ -474,6 +474,10 @@ function secure_notes_mail($key, &$message, $params) {
       $message['subject'] = t('Secure note invitation from @site-name (@url)', array('@site-name' => variable_get('site_name', 'Drupal'), '@url' => $base_url), $options);
       $message['body'][] = check_plain($params['message']);
       break;
+
+    case 'secure_notes_token_response':
+      $message['subject'] = t('Your secure note invitation was accepted');
+      $message['body'] = check_plain($params['message']);
   }
 }
 
@@ -548,4 +552,21 @@ function secure_notes_node_presave($node) {
   // If we have a secure note inviter value set, then set the uid of the node to
   // that user otherwise we just use whatever is already there.
   $node->uid = isset($node->secure_note_author) ? $node->secure_note_author : $node->uid;
+}
+
+function secure_notes_secure_notes_create_token_used($token, $node) {
+  dpm(array($node, $token));
+  $account = user_load($token['uid']);
+  $to = $account->mail;
+  $from = variable_get('site_mail', 'admin@example.com');
+  $message = t('Your invitation token to create a secure note was used. The token was sent to %email, with token string %token. It can now be picked up by you at %url', array('%email' => $token['email'], '%token' => $token['token'], '%url' => 'test');
+  // Load the message into params
+  $params = array();
+  $params['message'] = $message;
+  $language = language_default();
+  $send = TRUE;
+  $result = drupal_mail($module, $key, $to, $language, $params, $from, $send);
+  if ($result['result'] == TRUE) {
+    drupal_set_message('alerted is true');
+  }
 }

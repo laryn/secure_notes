@@ -334,10 +334,18 @@ function secure_notes_render_node_view($token) {
  * token from the system.
  */
 function secure_notes_node_form_submit($form, &$form_state) {
+  $node = $form_state['node'];
   $item = menu_get_item();
   $token = array($item['page_arguments'][0]);
+  $token_data = db_select('secure_notes_create', 'snc')
+      ->fields('snc')
+      ->condition('snc.token', $token, '=')
+      ->execute()
+      ->fetchAssoc();
+  //dpm($token_data);
   secure_notes_token_delete('add', $token);
   $form_state['redirect'] = '<front>';
+  module_invoke_all('secure_notes_create_token_used', $token_data, $node);
 }
 
 /**
