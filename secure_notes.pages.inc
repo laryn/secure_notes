@@ -273,7 +273,7 @@ function secure_notes_invite_submit($form, &$form_state) {
     $language = language_default();
     $send = TRUE;
     // Send the mail, and check for success.
-    $result = drupal_mail($module, $key, $to, $language, $params, $from, $send);
+    $result = drupal_mail('secure_notes', $key, $to, $language, $params, $from, $send);
     if ($result['result'] == TRUE) {
       drupal_set_message(t('Your message has been sent to @to. Please review this email address is correct. If this was done in error, revoke the invitation.', array('@to' => $to)));
     }
@@ -324,7 +324,17 @@ function secure_notes_render_node_view($token) {
   $node = node_load($nid);
   $node->note_pickup = TRUE;
   $output = node_view($node);
+  $removable = array('links', '#contextual_links');
+  foreach ($removable as $remove) {
+    if (isset($output[$remove])) {
+      $output[$remove]['#access'] = FALSE;
+    }
+  }
   return $output;
+}
+
+function secure_notes_preprocess_node(&$variables) {
+  dpm($variables);
 }
 
 /**
@@ -345,7 +355,8 @@ function secure_notes_node_form_submit($form, &$form_state) {
   //dpm($token_data);
   secure_notes_token_delete('add', $token);
   $form_state['redirect'] = '<front>';
-  module_invoke_all('secure_notes_create_token_used', $token_data, $node);
+  $token_type = 'create';
+  module_invoke_all('secure_notes_token_used', $token_data, $token_type, $node);
 }
 
 /**
