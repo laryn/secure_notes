@@ -330,6 +330,14 @@ function secure_notes_render_node_view($token) {
       $output[$remove]['#access'] = FALSE;
     }
   }
+  $token_type = 'view';
+  $token_data = db_select('secure_notes_view', 'snv')
+      ->fields('snv')
+      ->condition('snv.token', $token, '=')
+      ->execute()
+      ->fetchAssoc();
+  drupal_set_message(t('Your data is displayed for your records and your one time token has been used. The data will no longer be accessible. DO NOT refresh this page before you have stored the information safely. Remember this is sensitive data. Please store it appropriately.'), 'warning');
+  module_invoke_all('secure_notes_token_used', $token_data, $token_type, $node);
   return $output;
 }
 

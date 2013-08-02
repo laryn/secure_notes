@@ -577,7 +577,7 @@ function secure_notes_secure_notes_token_used($token, $type, $node) {
     }
   }
   elseif ($type == 'view') {
-    $message = t('Your invitation token to view a secure note was used. The token was sent to !email, with token string !token for the node titled "!title".', array('!email' => $sent_to, '!token' => $token['token'], '!title' => $node->title));
+    $message = t('Your invitation token to view a secure note was used. The token was sent to !email, with token string !token for the node with id !nid.', array('!email' => $sent_to, '!token' => $token['token'], '!nid' => $node->nid));
     // Load the message into params
     $params['message'] = $message;
     $language = language_default();
