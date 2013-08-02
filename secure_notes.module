@@ -587,3 +587,22 @@ function secure_notes_secure_notes_token_used($token, $type, $node) {
     }
   }
 }
+
+/**
+ * Implements hook_preprocess_node().
+ *
+ * If this is a note pickup viewing, then strip off any unnecessary data. We
+ * don't want to give away anything about the site that we don't have to.
+ */
+function secure_notes_preprocess_node(&$variables) {
+  if (!empty($variables['node']->note_pickup)) {
+    $variables['node_url'] = '/';
+    $variables['attributes_array'] = array();
+    $variables['rdf_mapping'] = array();
+    $variables['page'] = TRUE;
+    $variables['node']->nid = 0;
+    $variables['name'] = '';
+    $variables['rdf_template_variable_attributes_array'] = array();
+    $variables['submitted'] = strip_tags($variables['submitted']);
+  }
+}

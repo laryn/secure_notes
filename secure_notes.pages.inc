@@ -324,10 +324,12 @@ function secure_notes_render_node_view($token) {
   $node = node_load($nid);
   $node->note_pickup = TRUE;
   $output = node_view($node);
+  drupal_set_title($node->title);
   $removable = array('links', '#contextual_links');
   foreach ($removable as $remove) {
     if (isset($output[$remove])) {
       $output[$remove]['#access'] = FALSE;
+      unset($output[$remove]);
     }
   }
   $token_type = 'view';
@@ -339,10 +341,6 @@ function secure_notes_render_node_view($token) {
   drupal_set_message(t('Your data is displayed for your records and your one time token has been used. The data will no longer be accessible. DO NOT refresh this page before you have stored the information safely. Remember this is sensitive data. Please store it appropriately.'), 'warning');
   module_invoke_all('secure_notes_token_used', $token_data, $token_type, $node);
   return $output;
-}
-
-function secure_notes_preprocess_node(&$variables) {
-  dpm($variables);
 }
 
 /**
