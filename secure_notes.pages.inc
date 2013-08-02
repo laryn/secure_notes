@@ -352,7 +352,6 @@ function secure_notes_node_form_submit($form, &$form_state) {
       ->condition('snc.token', $token, '=')
       ->execute()
       ->fetchAssoc();
-  //dpm($token_data);
   secure_notes_token_delete('add', $token);
   $form_state['redirect'] = '<front>';
   $token_type = 'create';

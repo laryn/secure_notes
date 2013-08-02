@@ -555,7 +555,10 @@ function secure_notes_node_presave($node) {
   $node->uid = isset($node->secure_note_author) ? $node->secure_note_author : $node->uid;
 }
 
-function secure_notes_secure_notes_create_token_used($token, $type, $node) {
+/**
+ * Implements secure_notes_create_token_used().
+ */
+function secure_notes_secure_notes_token_used($token, $type, $node) {
   $account = user_load($token['uid']);
   $to = $account->mail;
   $sent_to = !empty($token['email']) ? $token['email'] : t('an unknown user');
