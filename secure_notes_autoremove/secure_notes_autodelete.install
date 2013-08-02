@@ -1,0 +1,29 @@
+<?php
+
+/**
+ * @file
+ */
+
+/**
+ * Implements hook_schema().
+ *
+ */
+function secure_notes_autodelete_schema() {
+  $schema = array();
+  $schema['secure_notes_autodelete'] = array(
+    'description' => 'Stores a list of node nids that can be deleted on cron runs.',
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'The {node}.nid of the node to delete.',
+      ),
+    ),
+    'primary key' => array('nid'),
+    'indexes' => array(
+      'nid'    => array('nid'),
+    ),
+  );
+
+  return $schema;
+}
