@@ -2,4 +2,3 @@ name = Secure Notes Auto Delete
 description = Cleans up retreived secure notes so that they don't languish in your database.
 core = 7.x
 package = other
-configure = admin/config/content/secure-notes/autodelete
