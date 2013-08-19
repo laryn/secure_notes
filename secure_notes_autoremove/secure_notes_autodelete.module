@@ -44,3 +44,59 @@ function secure_notes_autodelete_pickup_confirm_form($form, $form_state, $nid) {
   );
   return $form;
 }
+
+function secure_notes_autodelete_pickup_confirm_form_submit($form, $form_state) {
+  global $user;
+  $entry = array('nid' => $form_state['values']['pickup_nid'], 'uid' => $user->uid);
+  try {
+    drupal_write_record('secure_notes_autodelete', $entry);
+    drupal_set_message(t('The node has been marked from deletion.'));
+  }
+  catch (PDOException $e) {
+    if ($e->getCode() == 23000) {
+      drupal_set_message(t('This node is already marked as picked up. No need to remark it.'), 'warning');
+    }
+  }
+}
+
+function secure_nodes_autodelete_node_is_dropoff($node) {
+  $result = db_query('SELECT nid FROM {secure_notes_dropoff} WHERE nid = :nid', array(':nid' => $node->nid))->fetchField();
+  return ($result > 0);
+}
+
+function secure_notes_autodelete_unmarked($node) {
+  $result = db_query('SELECT uid FROM {secure_notes_autodelete} WHERE nid = :nid', array(':nid' => $node->nid))->fetchField();
+  return $result;
+}
+
+function secure_notes_autodelete_secure_notes_token_used($token_data, $token_type, $node) {
+  switch ($token_type) {
+    case 'view':
+      $tokens_left = db_query('SELECT nid FROM {secure_notes_view} WHERE nid = :nid AND token <> :token',
+        array(':nid' => $node->nid, ':token' => $token_data['token']))
+        ->fetchField();
+      if ($tokens_left === FALSE) {
+        $entry = array('nid' => $node->nid, 'uid' => 0);
+        drupal_write_record('secure_notes_autodelete', $entry);
+      }
+      break;
+    case 'create':
+      $entry = array('nid' => $node->nid);
+      drupal_write_record('secure_notes_dropoff', $entry);
+      break;
+  }
+}
+
+function secure_notes_autodelete_cron() {
+  $nids = db_query('SELECT nid FROM {secure_notes_autodelete}')->fetchCol();
+  if (!empty($nids)) {
+    node_delete_multiple($nids);
+    db_delete('secure_notes_autodelete')
+      ->condition('nid', $nids, 'IN')
+      ->execute();
+    db_delete('secure_notes_dropoff')
+      ->condition('nid', $nids, 'IN')
+      ->execute();
+    watchdog('secure notes autodelete', 'Automatically deleted retreived secure notes on cron run. Nodes with the following nids were deleted: %nids', array('%nids' => implode($nids, ', ')));
+  }
+}
