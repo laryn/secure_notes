@@ -14,24 +14,34 @@
  * secure notes token.
  */
 function secure_notes_autodelete_node_view($node, $view_mode, $langcode) {
-  // @todo user hook_forms so that on overview pages we don't have conflicting
-  // form ids.
   if (secure_notes_type_enabled($node->type)) {
     $dropoff = secure_nodes_autodelete_node_is_dropoff($node);
     $marked = secure_notes_autodelete_marked($node);
     if ($dropoff && !$marked) {
       $node->content['secure_notes_pickup'] = array(
-        'form' => drupal_get_form('secure_notes_autodelete_pickup_confirm_form', $node->nid),
+        'form' => drupal_get_form('secure_notes_autodelete_pickup_confirm_form_' . $node->nid, $node->nid),
         '#weight' => 10,
       );
     }
     elseif ($marked > 0 && $dropoff && $view_mode == 'full') {
       $username = user_load($marked)->name;
       drupal_set_message(t('This node has been marked for deletion by user %username. It will be automaticially removed on the next cron run.', array('%username' => $username)), 'warning');
-
-
     }
   }
+}
+
+/**
+ * Implementation of hook_forms().
+ *
+ * Allow multiple autodelete pickup forms to be displayed on the same page if
+ * necessary.
+ */
+function secure_notes_autodelete_forms($form_id, $args) {
+  $forms = array();
+  if (substr($form_id, 0, 44) == 'secure_notes_autodelete_pickup_confirm_form_') {
+    $forms[$form_id] = array('callback' => 'secure_notes_autodelete_pickup_confirm_form');
+  }
+  return $forms;
 }
 
 /**
