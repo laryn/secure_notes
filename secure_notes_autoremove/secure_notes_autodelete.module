@@ -73,9 +73,10 @@ function secure_notes_autodelete_pickup_confirm_form($form, $form_state, $nid) {
 function secure_notes_autodelete_pickup_confirm_form_submit($form, $form_state) {
   global $user;
   $entry = array('nid' => $form_state['values']['pickup_nid'], 'uid' => $user->uid);
+  $title = db_query('SELECT title FROM {node} WHERE nid = :nid', array(':nid' => $form_state['values']['pickup_nid']))->fetchField();
   try {
     drupal_write_record('secure_notes_autodelete', $entry);
-    drupal_set_message(t('The node has been marked from deletion.'));
+    drupal_set_message(t('The secure note %title has been marked as "picked up" and is scheduled for deletion.', array('%title' => $title)));
   }
   catch (PDOException $e) {
     if ($e->getCode() == 23000) {
