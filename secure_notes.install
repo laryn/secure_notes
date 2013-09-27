@@ -103,11 +103,20 @@ function secure_notes_install() {
     'name' => st('Secure Note'),
     'base' => 'node_content',
     'description' => st('Content meant to be a secure exchange between a user of the site and a non-user of the site.'),
-    'custom' => TRUE,
+    //'custom' => TRUE,
     'locked' => FALSE,
   );
 
   $type = node_type_set_defaults($type);
   node_type_save($type);
   node_add_body_field($type);
+  $options = array(
+    'comment' => '0',
+    'menu_options' => array(),
+    'node_preview' => '0',
+    'node_submitted' => 0,
+  );
+  foreach ($options as $option => $value) {
+    variable_set($option . '_secure_note', $value);
+  }
 }
