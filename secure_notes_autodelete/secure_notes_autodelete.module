@@ -63,15 +63,16 @@ function secure_notes_autodelete_pickup_confirm_form($form, $form_state, $nid) {
     '#value' => $nid,
   );
 
+  $form['pickup_confirm'] = array(
+    '#type' => 'submit',
+    '#value' => t('Pickup complete'),
+  );
+
   $form['pickup_instructions'] = array(
     '#type' => 'item',
     '#description' => t('Once you have sucessfully retrieved this data, confirm the pickup to mark the node for automatic removal.'),
   );
 
-  $form['pickup_confirm'] = array(
-    '#type' => 'submit',
-    '#value' => t('Pickup complete'),
-  );
   return $form;
 }
 
