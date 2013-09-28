@@ -74,7 +74,7 @@ function secure_notes_admin_settings_form() {
  * the access permissions for rebuild if and only if the list of allowed secure
  * notes types has changed.
  *
- * @see secure_notes_admin_settings_form().
+ * @see secure_notes_admin_settings_form()
  */
 function secure_notes_secure_notes_admin_settings_additional_submit($form, &$form_state) {
   $diff = array_diff_assoc($form_state['values']['secure_notes_types'], $form_state['values']['secure_notes_types_original']);

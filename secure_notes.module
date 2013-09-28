@@ -41,8 +41,8 @@ function secure_notes_menu() {
     'file' => 'secure_notes.pages.inc',
   );
   $items['admin/content/secure-notes/invite/add'] = array(
-    'title' => t('Generate Secure Note Add Link'),
-    'description' => t('Generate a one time use link for the creation of a note.'),
+    'title' => 'Generate Secure Note Add Link',
+    'description' => 'Generate a one time use link for the creation of a note.',
     'weight' => 1,
     'page callback' => 'drupal_get_form',
     'page arguments' => array('secure_notes_add_link_invite'),
@@ -50,9 +50,9 @@ function secure_notes_menu() {
     'file' => 'secure_notes.pages.inc',
   );
   $items['node/%/secure-notes/invite'] = array(
-    'title' => t('Secure Note Invitation'),
+    'title' => 'Secure Note Invitation',
     'type' => MENU_LOCAL_TASK,
-    'description' => t('Generate a one time use link that can be used to view this node.'),
+    'description' => 'Generate a one time use link that can be used to view this node.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('secure_notes_view_link_invite'),
     'access callback' => 'secure_notes_node_invite_access',
@@ -60,9 +60,9 @@ function secure_notes_menu() {
     'file' => 'secure_notes.pages.inc',
   );
   $items['node/%/secure-notes/review'] = array(
-    'title' => t('Review Secure Note Invitations'),
+    'title' => 'Review Secure Note Invitations',
     'type' => MENU_LOCAL_TASK,
-    'description' => t('Review secure note invitations for this node.'),
+    'description' => 'Review secure note invitations for this node.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('secure_notes_review', 'view', 1),
     'access callback' => 'secure_notes_review_access',
@@ -70,8 +70,8 @@ function secure_notes_menu() {
     'file' => 'secure_notes.pages.inc',
   );
   $items['admin/content/secure-notes'] = array(
-    'title' => t('Secure Notes'),
-    'description' => t('Review secure note invitations.'),
+    'title' => 'Secure Notes',
+    'description' => 'Review secure note invitations.',
     'page callback' => 'secure_notes_manage',
     'access callback' => 'secure_notes_review_access',
     'access arguments' => array('any'),
@@ -80,8 +80,8 @@ function secure_notes_menu() {
     'file path' => drupal_get_path('module', 'system'),
   );
   $items['admin/content/secure-notes/review/add'] = array(
-    'title' => t('Review Secure Note Creation Invitations'),
-    'description' => t('Review secure note creation invitations.'),
+    'title' => 'Review Secure Note Creation Invitations',
+    'description' => 'Review secure note creation invitations.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('secure_notes_review', 'add'),
     'access callback' => 'secure_notes_review_access',
@@ -89,8 +89,8 @@ function secure_notes_menu() {
     'file' => 'secure_notes.pages.inc',
   );
   $items['admin/content/secure-notes/review/view'] = array(
-    'title' => t('Review Secure Note View Invitations'),
-    'description' => t('Review secure note creation invitations.'),
+    'title' => 'Review Secure Note View Invitations',
+    'description' => 'Review secure note creation invitations.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('secure_notes_review', 'view'),
     'access callback' => 'secure_notes_review_access',
@@ -160,7 +160,7 @@ function secure_notes_permission() {
 }
 
 /*
- * Implementation of hook_help()
+ * Implementation of hook_help().
  */
 function secure_notes_help($path, $arg) {
   $output = '';
@@ -297,7 +297,7 @@ function secure_notes_review_access($invitation_type = NULL, $abrv = NULL, $nid 
   if ($abrv == 'a') {
     $invitation_type = 'add';
   }
-  else if ($abrv == 'v') {
+  elseif ($abrv == 'v') {
     $invitation_type = 'view';
   }
 
@@ -373,11 +373,11 @@ function secure_notes_node_access($node, $op, $account) {
   if (is_string($node)) {
     $access = NODE_ACCESS_IGNORE;
   }
-  else if (!in_array($node->type, $types, TRUE)) {
+  elseif (!in_array($node->type, $types, TRUE)) {
     // If it is not a secure note type then ignore it.
     $access = NODE_ACCESS_IGNORE;
   }
-  else if (!empty($node->note_pickup)) {
+  elseif (!empty($node->note_pickup)) {
     $access = NODE_ACCESS_ALLOW;
   }
   return $access;
@@ -536,7 +536,7 @@ function secure_notes_node_type_delete($info) {
     ->condition('type', $info->type, '=')
     ->execute();
 
-  // In addition, remove the type from the array();
+  // In addition, remove the type from the array.
   $types = secure_notes_get_types();
   if (isset($types[$info->type])) {
     unset($types[$info->type]);
@@ -573,7 +573,7 @@ function secure_notes_secure_notes_token_used($token, $type, $node) {
     $language = language_default();
     $result = drupal_mail('secure_notes', 'secure_notes_token_response', $to, $language, $params, $from, $send);
     if ($result['result'] == TRUE) {
-      drupal_set_message('Your note has been saved and your inviter has been been alerted by email.');
+      drupal_set_message(t('Your note has been saved and your inviter has been been alerted by email.'));
     }
   }
   elseif ($type == 'view') {
@@ -583,7 +583,7 @@ function secure_notes_secure_notes_token_used($token, $type, $node) {
     $language = language_default();
     $result = drupal_mail('secure_notes', 'secure_notes_token_response', $to, $language, $params, $from, $send);
     if ($result['result'] == TRUE) {
-      drupal_set_message('We are happy you were able to pick up this data. Your inviter has been been alerted by email that you have receieved the message.');
+      drupal_set_message(t('We are happy you were able to pick up this data. Your inviter has been been alerted by email that you have receieved the message.'));
     }
   }
 }

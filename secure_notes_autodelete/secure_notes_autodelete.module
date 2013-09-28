@@ -41,7 +41,7 @@ function secure_notes_autodelete_node_view($node, $view_mode, $langcode) {
 }
 
 /**
- * Implementation of hook_forms().
+ * Implements hook_forms().
  *
  * Allow multiple autodelete pickup forms to be displayed on the same page if
  * necessary.
@@ -79,7 +79,7 @@ function secure_notes_autodelete_pickup_confirm_form($form, $form_state, $nid) {
 /**
  * Submit handler for picking up a secure note.
  *
- * @see secure_notes_autodelete_pickup_confirm_form().
+ * @see secure_notes_autodelete_pickup_confirm_form()
  */
 function secure_notes_autodelete_pickup_confirm_form_submit($form, $form_state) {
   global $user;

@@ -185,8 +185,8 @@ function secure_notes_view_link_invite($form, &$form_state) {
 /**
  * Validation function for secure notes invitations forms.
  *
- * @see secure_notes_view_link_invite().
- * @see secure_notes_add_link_invite().
+ * @see secure_notes_view_link_invite()
+ * @see secure_notes_add_link_invite()
  */
 function secure_notes_invite_validate($form, &$form_state) {
   if ($form_state['values']['email_send']) {
@@ -204,8 +204,8 @@ function secure_notes_invite_validate($form, &$form_state) {
 /**
  * Submission function for secure notes invitations forms.
  *
- * @see secure_notes_view_link_invite().
- * @see secure_notes_add_link_invite().
+ * @see secure_notes_view_link_invite()
+ * @see secure_notes_add_link_invite()
  */
 function secure_notes_invite_submit($form, &$form_state) {
   global $user;
@@ -421,12 +421,12 @@ function secure_notes_review($form, $form_state, $invitation_type, $nid = NULL) 
   $destination = drupal_get_destination();
 
   $options = array();
-  while($token = $tokens->fetchAssoc()) {
+  while ($token = $tokens->fetchAssoc()) {
     $options[$token['token']] = array();
     if (!empty($token['type'])) {
       $options[$token['token']]['type'] = check_plain(node_type_get_name($token['type']));
     }
-    else if (!empty($token['nid'])) {
+    elseif (!empty($token['nid'])) {
       $node = node_load($token['nid']);
       $options[$token['token']]['title'] = l($node->title, 'node/' . $node->nid);
     }
@@ -472,7 +472,7 @@ function secure_notes_delete_confirm($form, &$form_state, $type, $tokens) {
   if ($type == 'a') {
     $type = 'add';
   }
-  else if ($type == 'v') {
+  elseif ($type == 'v') {
     $type = 'view';
   }
   // If the incoming value is a string then convert it to a single value array.
