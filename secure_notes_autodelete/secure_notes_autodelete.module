@@ -25,7 +25,17 @@ function secure_notes_autodelete_node_view($node, $view_mode, $langcode) {
     }
     elseif ($marked > 0 && $dropoff && $view_mode == 'full') {
       $username = user_load($marked)->name;
-      drupal_set_message(t('This node has been marked for deletion by user %username. It will be automaticially removed on the next cron run.', array('%username' => $username)), 'warning');
+      $messages = drupal_get_messages('status', FALSE);
+      $messages = isset($messages['status']) ? $messages['status'] : array();
+      $set = FALSE;
+      foreach ($messages as $message) {
+        if ($message == t('The secure note %title has been marked as "picked up" and is scheduled for deletion.', array('%title' => $node->title))) {
+          $set = TRUE;
+        }
+      }
+      if (!$set) {
+        drupal_set_message(t('This node has been marked for deletion by user %username. It will be automaticially removed on the next cron run.', array('%username' => $username)), 'warning');
+      }
     }
   }
 }
@@ -76,7 +86,7 @@ function secure_notes_autodelete_pickup_confirm_form_submit($form, $form_state) 
   $title = db_query('SELECT title FROM {node} WHERE nid = :nid', array(':nid' => $form_state['values']['pickup_nid']))->fetchField();
   try {
     drupal_write_record('secure_notes_autodelete', $entry);
-    drupal_set_message(t('The secure note %title has been marked as "picked up" and is scheduled for deletion.', array('%title' => $title)));
+    drupal_set_message(t('The secure note %title has been marked as "picked up" and is scheduled for deletion.', array('%title' => $title)), 'status');
   }
   catch (PDOException $e) {
     if ($e->getCode() == 23000) {
