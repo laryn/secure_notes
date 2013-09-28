@@ -120,3 +120,14 @@ function secure_notes_install() {
     variable_set($option . '_secure_note', $value);
   }
 }
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Remove variables and data.
+ */
+function secure_notes_uninstall() {
+  // We don't clean up the secure notes node variables because the content type
+  // may persist even after the module is removed.
+  variable_del('secure_notes_types');
+}
