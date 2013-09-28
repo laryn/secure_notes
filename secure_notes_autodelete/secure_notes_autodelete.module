@@ -115,8 +115,8 @@ function secure_nodes_autodelete_node_is_dropoff($node) {
  *
  * @param $node A node object.
  *
- * @return Mixed, the user uid who marked the node for delteion or FALSE if the node is
- *   unmarked.
+ * @return Mixed, the user uid who marked the node for delteion or FALSE if the
+ *   node is unmarked.
  */
 function secure_notes_autodelete_marked($node) {
   $result = db_query('SELECT uid FROM {secure_notes_autodelete} WHERE nid = :nid', array(':nid' => $node->nid))->fetchField();
