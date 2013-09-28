@@ -97,13 +97,12 @@ function secure_notes_schema() {
 function secure_notes_install() {
   module_load_include('inc', 'node', 'content_types');
 
-  // @todo disable comments and other normal node stuff on notes.
   $type = array(
     'type' => 'secure_note',
     'name' => st('Secure Note'),
     'base' => 'node_content',
     'description' => st('Content meant to be a secure exchange between a user of the site and a non-user of the site.'),
-    //'custom' => TRUE,
+    'custom' => TRUE,
     'locked' => FALSE,
   );
 
@@ -115,6 +114,7 @@ function secure_notes_install() {
     'menu_options' => array(),
     'node_preview' => '0',
     'node_submitted' => 0,
+    'node_options' => array('status'),
   );
   foreach ($options as $option => $value) {
     variable_set($option . '_secure_note', $value);
