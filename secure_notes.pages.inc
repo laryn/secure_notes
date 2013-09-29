@@ -298,6 +298,8 @@ function secure_notes_ajax_invite_submit($form, &$form_state) {
  * the standard node form onto this page.
  */
 function secure_notes_render_add_form($token) {
+  drupal_add_http_header('Cache-Control', 'no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0');
+  drupal_add_http_header('Expires', 'Sat, 02 Jan 1971 00:00:00 GMT');
   $type = db_select('secure_notes_create', 'snc')
     ->fields('snc', array('type'))
     ->condition('token', $token, '=')
@@ -316,6 +318,8 @@ function secure_notes_render_add_form($token) {
  * Load a node a display it to a token holder.
  */
 function secure_notes_render_node_view($token) {
+  drupal_add_http_header('Cache-Control', 'no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0');
+  drupal_add_http_header('Expires', 'Sat, 02 Jan 1971 00:00:00 GMT');
   $nid = db_select('secure_notes_view', 'snv')
     ->fields('snv', array('nid'))
     ->condition('token', $token, '=')
