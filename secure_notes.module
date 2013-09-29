@@ -194,7 +194,7 @@ function secure_notes_menu_local_tasks_alter(&$data, $router_item, $root_path) {
 /**
  * Implements hook_form_node_form_alter().
  *
- * Add our custom form submission handler on creating nodes when coming from the
+ * Add custom form submission handler on creating nodes when coming from the
  * secure note add url.
  */
 function secure_notes_form_node_form_alter(&$form, &$form_state) {
@@ -221,9 +221,12 @@ function secure_notes_form_node_form_alter(&$form, &$form_state) {
 }
 
 /**
- * Determine if a token to add a secure note is valid.
+ * Determine if a token to add or view a secure note is valid.
  *
- * @param string $token - The token to verify.
+ * @param string $token
+ *   The token to verify.
+ * @param string $token_type
+ *   The kind of token in question (either 'add' or 'view')
  *
  * @return TRUE if the token is valid or FALSE if it is not.
  */
@@ -315,7 +318,8 @@ function secure_notes_review_access($invitation_type = NULL, $abrv = NULL, $nid 
 /**
  * Helper function to determine if a given node type is a secure note.
  *
- * @param string $type - The node type in question.
+ * @param string $type
+ *   The node type in question.
  *
  * @return boolean
  *   Returns TRUE if secure notes are enabled on the type in question.
@@ -427,8 +431,10 @@ function secure_notes_node_access_records($node) {
 /**
  * Helper function to delete a secure note invitation.
  *
- * @param string $type - The type of token to delete.
- * @param array $tokens - The tokens to be deleted supplied as an array.
+ * @param string $type
+ *   The type of token to delete.
+ * @param array $tokens
+ *   The tokens to be deleted supplied as an array.
  */
 function secure_notes_token_delete($type, $tokens) {
   if ($type == 'add') {
@@ -478,9 +484,11 @@ function secure_notes_mail($key, &$message, $params) {
 /**
  * Helper function to provide default messages for sent emails.
  *
- * @param string $type - The type of token for which a message should be send.
+ * @param string $type
+ *   The type of token for which a message should be send.
  *
- * @return A translated string to be used as the template for an email message.
+ * @return string
+ *   A translated string to be used as the template for an email message.
  */
 function secure_notes_default_email_message($type) {
   switch ($type) {
