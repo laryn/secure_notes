@@ -26,8 +26,8 @@ function secure_notes_menu() {
     'type' => MENU_CALLBACK,
     'page callback' => 'secure_notes_render_add_form',
     'page arguments' => array(2),
-    'access callback' => 'secure_notes_add_token_valid',
-    'access arguments' => array(2),
+    'access callback' => 'secure_notes_token_valid',
+    'access arguments' => array(2, 1),
     'file' => 'secure_notes.pages.inc',
   );
   $items['secure-notes/view/%'] = array(
@@ -36,8 +36,8 @@ function secure_notes_menu() {
     'type' => MENU_CALLBACK,
     'page callback' => 'secure_notes_render_node_view',
     'page arguments' => array(2),
-    'access callback' => 'secure_notes_view_token_valid',
-    'access arguments' => array(2),
+    'access callback' => 'secure_notes_token_valid',
+    'access arguments' => array(2, 1),
     'file' => 'secure_notes.pages.inc',
   );
   $items['admin/content/secure-notes/invite/add'] = array(
@@ -227,36 +227,29 @@ function secure_notes_form_node_form_alter(&$form, &$form_state) {
  *
  * @return TRUE if the token is valid or FALSE if it is not.
  */
-function secure_notes_add_token_valid($token) {
-  $result = db_select('secure_notes_create', 'snc')
-    ->fields('snc', array('expires', 'type'))
-    ->condition('token', $token, '=')
-    ->execute()
-    ->fetchObject();
-  $access = ($result && (int) $result->expires > REQUEST_TIME && secure_notes_type_enabled($result->type));
-  if (!$access) {
-    drupal_set_message(t('The token you supplied is either invalid, has expired, or already been used. Please check that the url matches the one that was given to you.'), 'error');
+function secure_notes_token_valid($token, $token_type) {
+  $access = FALSE;
+  if ($token_type == 'add') {
+    $result = db_select('secure_notes_create', 'snc')
+      ->fields('snc', array('expires', 'type'))
+      ->condition('token', $token, '=')
+      ->execute()
+      ->fetchObject();
+    $access = ($result && (int) $result->expires > REQUEST_TIME && secure_notes_type_enabled($result->type));
+    if (!$access) {
+      drupal_set_message(t('The token you supplied is either invalid, has expired, or already been used. Please check that the url matches the one that was given to you.'), 'error');
+    }
   }
-  return $access;
-}
-
-/**
- * @todo - combine this with secure_notes_add_token_valid().
- * Determine if a token to view a secure note is valid.
- *
- * @param string $token - The token to verify.
- *
- * @return TRUE if the token is valid or FALSE if it is not.
- */
-function secure_notes_view_token_valid($token) {
-  $result = db_select('secure_notes_view', 'snv')
-    ->fields('snv', array('expires'))
-    ->condition('token', $token, '=')
-    ->execute()
-    ->fetchObject();
-  $access = $result && (int) $result->expires > REQUEST_TIME;
-  if (!$access) {
-    drupal_set_message(t('The token you supplied is either invalid, has expired, or already been used. Please check that the url matches the one that was given to you.'), 'error');
+  elseif ($token_type == 'view') {
+    $result = db_select('secure_notes_view', 'snv')
+      ->fields('snv', array('expires'))
+      ->condition('token', $token, '=')
+      ->execute()
+      ->fetchObject();
+    $access = $result && (int) $result->expires > REQUEST_TIME;
+    if (!$access) {
+      drupal_set_message(t('The token you supplied is either invalid, has expired, or already been used. Please check that the url matches the one that was given to you.'), 'error');
+    }
   }
   return $access;
 }
