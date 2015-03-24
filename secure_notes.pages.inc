@@ -308,10 +308,25 @@ function secure_notes_render_add_form($token) {
   if (!$type) {
     drupal_access_denied();
   }
-  module_load_include('inc', 'node', 'node.pages');
-  $form = node_add($type);
-  $output = drupal_render($form);
-  return $output;
+  // Set page title.
+  $types = node_type_get_types();
+  drupal_set_title(t('Create @name', array('@name' => $types[$type]->name)), PASS_THROUGH);
+
+  global $user;
+  $node = (object) array(
+    'uid' => $user->uid,
+    'name' => (isset($user->name) ? $user->name : ''),
+    'type' => $type,
+    'language' => LANGUAGE_NONE,
+  );
+  $form_state = array(
+    'build_info' => array(
+      'args' => array($node)
+    ),
+  );
+  form_load_include($form_state, 'inc', 'node', 'node.pages');
+  $form = drupal_build_form($type . '_node_form', $form_state);
+  return drupal_render($form);
 }
 
 /**
