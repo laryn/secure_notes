@@ -213,19 +213,25 @@ function secure_notes_form_node_form_alter(&$form, &$form_state) {
     // save in case this select returns nothing even though this should not ever
     // happen.
     $uid = !empty($uid) ? $uid : 0;
-    $form['secure_note_author'] = array(
-      '#type' => 'value',
-      '#value' => $uid,
-    );
 
-    // Set the value in the form state as well. This is needed because AJAX
-    // Posts which happen on multi-file uploads, will not get our form alter
-    // otherwise. So this both ensures the data is there and also is used above
-    // to decide if the form alter should be rerun.
-    $form_state['secure_note_author'] = array(
-      '#type' => 'value',
-      '#value' => $uid,
-    );
+    if (!isset($form_state['secure_note_author'])) {
+      // Set the value in the form state as well. This is needed because AJAX
+      // Posts which happen on multi-file uploads, will not get our form alter
+      // otherwise. So this both ensures the data is there and also is used
+      // above to decide if the form alter should be rerun.
+      $form_state['secure_note_author'] = array(
+        '#type' => 'value',
+        '#value' => $uid,
+      );
+
+      $form['secure_note_author'] = array(
+        '#type' => 'value',
+        '#value' => $uid,
+      );
+    }
+    else {
+      $form['secure_note_author'] = $form_state['secure_note_author'];
+    }
 
     // Only add the action if it is not already there.
     if (!in_array('secure_notes_node_form_submit', $form['actions']['submit']['#submit'])) {
