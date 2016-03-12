@@ -330,7 +330,7 @@ function secure_notes_render_add_form($token) {
 }
 
 /**
- * Load a node a display it to a token holder.
+ * Load a node and display it to a token holder.
  */
 function secure_notes_render_node_view($token) {
   drupal_add_http_header('Cache-Control', 'no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0');

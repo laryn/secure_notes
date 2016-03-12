@@ -199,7 +199,7 @@ function secure_notes_menu_local_tasks_alter(&$data, $router_item, $root_path) {
  */
 function secure_notes_form_node_form_alter(&$form, &$form_state) {
   $menu = menu_get_item();
-  if ($menu['path'] == 'secure-notes/add/%') {
+  if ($menu['path'] == 'secure-notes/add/%' || isset($form_state['secure_note_author'])) {
     // Look up the inviter's user id and supply that so that the new node can be
     // owned by that user.
     $token = arg(2);
@@ -208,6 +208,7 @@ function secure_notes_form_node_form_alter(&$form, &$form_state) {
       ->condition('snc.token', $token, '=')
       ->execute()
       ->fetchField();
+
     // Make sure we set the uid to a valid number to avoid PDO errors on node
     // save in case this select returns nothing even though this should not ever
     // happen.
@@ -216,7 +217,20 @@ function secure_notes_form_node_form_alter(&$form, &$form_state) {
       '#type' => 'value',
       '#value' => $uid,
     );
-    $form['actions']['submit']['#submit'][] = 'secure_notes_node_form_submit';
+
+    // Set the value in the form state as well. This is needed because AJAX
+    // Posts which happen on multi-file uploads, will not get our form alter
+    // otherwise. So this both ensures the data is there and also is used above
+    // to decide if the form alter should be rerun.
+    $form_state['secure_note_author'] = array(
+      '#type' => 'value',
+      '#value' => $uid,
+    );
+
+    // Only add the action if it is not already there.
+    if (!in_array('secure_notes_node_form_submit', $form['actions']['submit']['#submit'])) {
+      $form['actions']['submit']['#submit'][] = 'secure_notes_node_form_submit';
+    }
   }
 }
 
