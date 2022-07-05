@@ -496,17 +496,17 @@ function secure_notes_mail($key, &$message, $params) {
   global $base_url;
 
   $options = array(
-    'langcode' => $message['language']->language,
+    'langcode' => $message['language']->langcode,
   );
 
   switch ($key) {
     case 'secure_notes_view':
-      $message['subject'] = t('Secure note pickup from @site-name (@url)', array('@site-name' => config_get('system.performance', 'site_name'), '@url' => $base_url), $options);
+      $message['subject'] = t('Secure note pickup from @site-name (@url)', array('@site-name' => config_get('system.core', 'site_name'), '@url' => $base_url), $options);
       $message['body'][] = check_plain($params['message']);
       break;
 
     case 'secure_notes_add':
-      $message['subject'] = t('Secure note invitation from @site-name (@url)', array('@site-name' => config_get('system.performance', 'site_name'), '@url' => $base_url), $options);
+      $message['subject'] = t('Secure note invitation from @site-name (@url)', array('@site-name' => config_get('system.core', 'site_name'), '@url' => $base_url), $options);
       $message['body'][] = check_plain($params['message']);
       break;
 
