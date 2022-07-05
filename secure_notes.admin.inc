@@ -9,9 +9,11 @@
  * Defines the Secure Notes admin settings form.
  */
 function secure_notes_admin_settings_form() {
+  $config = config('secure_notes.settings');
   // Make sure the secure note type hasn't been deleted.
   $default = secure_notes_get_types();
   $form = array();
+  $form['#config'] = 'secure_notes.settings';
 
   $form['secure_notes_types'] = array(
     '#title' => t('The content types that are allowed to be viewed or created as secure notes.'),
@@ -26,7 +28,7 @@ function secure_notes_admin_settings_form() {
     '#value' => $default,
   );
 
-  $default_expire = variable_get('secure_notes_default_expiration', 48);
+  $default_expire = $config->get('secure_notes_default_expiration');
   $form['secure_notes_default_expiration'] = array(
     '#title' => t('Token expiration'),
     '#description' => t('Secure note tokens will expire if not used after this amount of time.'),
@@ -54,14 +56,14 @@ function secure_notes_admin_settings_form() {
     '#title' => t('Default Email Message for Adding a Note'),
     '#description' => t('The default message that will be prefilled when creating a new secure note invitation to add content. Be sure to include the [invite-token]. You can also add the [username] token.'),
     '#type' => 'textarea',
-    '#default_value' => check_plain(variable_get('secure_notes_default_message_add', $default_add_message)),
+    '#default_value' => check_plain($config->get('secure_notes_default_message_add')),
   );
 
   $form['secure_notes_default_message_view'] = array(
     '#title' => t('Default Email Message for Viewing a Note'),
     '#description' => t('The default message that will be prefilled when creating a new secure note invitation to view content. Be sure to include the [invite-token]. You can also add the [username] token.'),
     '#type' => 'textarea',
-    '#default_value' => check_plain(variable_get('secure_notes_default_message_view', $default_view_message)),
+    '#default_value' => check_plain($config->get('secure_notes_default_message_view')),
   );
 
   $form = system_settings_form($form);

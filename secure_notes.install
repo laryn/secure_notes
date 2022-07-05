@@ -14,13 +14,13 @@ function secure_notes_schema() {
   $schema['secure_notes_create'] = array(
     'description' => 'Stores access tokens and node types for secure note creation.',
     'fields' => array(
-      'token'  => array(
+      'token' => array(
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'description' => 'Token for access to node creation.',
       ),
-      'email'  => array(
+      'email' => array(
         'type' => 'varchar',
         'length' => 255,
         'not null' => FALSE,
@@ -45,20 +45,20 @@ function secure_notes_schema() {
     ),
     'primary key' => array('token'),
     'indexes' => array(
-      'expires'    => array('expires'),
+      'expires' => array('expires'),
     ),
   );
 
   $schema['secure_notes_view'] = array(
     'description' => 'Stores access tokens and node types for secure note viewing.',
     'fields' => array(
-      'token'  => array(
+      'token' => array(
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'description' => 'Token for access to node creation.',
       ),
-      'email'  => array(
+      'email' => array(
         'type' => 'varchar',
         'length' => 255,
         'not null' => FALSE,
@@ -83,7 +83,7 @@ function secure_notes_schema() {
     'primary key' => array('token'),
     'indexes' => array(
       'nid' => array('nid'),
-      'expires'    => array('expires'),
+      'expires' => array('expires'),
     ),
   );
   return $schema;
@@ -117,8 +117,13 @@ function secure_notes_install() {
     'node_options' => array('status'),
   );
   foreach ($options as $option => $value) {
+    // TODO This variable was probably removed in Backdrop without replacement.
     variable_set($option . '_secure_note', $value);
   }
+  // Dynamically generated variable data was detected on the following lines.
+  // /secure_notes/secure_notes.pages.inc line 77
+  // /secure_notes/secure_notes.pages.inc line 156
+  // /secure_notes/secure_notes.module line 367
 }
 
 /**
@@ -129,5 +134,22 @@ function secure_notes_install() {
 function secure_notes_uninstall() {
   // We don't clean up the secure notes node variables because the content type
   // may persist even after the module is removed.
-  variable_del('secure_notes_types');
+  config_clear('secure_notes.settings', 'secure_notes_types');
+}
+
+/**
+ * Migrate secure_notes variables to config.
+ */
+function secure_notes_update_1000() {
+  $config = config('secure_notes.settings');
+  $config->set('secure_notes_default_expiration', update_variable_get('secure_notes_default_expiration', '48'));
+  $config->set('secure_notes_default_message_add', update_variable_get('secure_notes_default_message_add', 'dynamic value in file /secure_notes/secure_notes.pages.inc line 77'));
+  $config->set('secure_notes_default_message_view', update_variable_get('secure_notes_default_message_view', 'dynamic value in file /secure_notes/secure_notes.pages.inc line 156'));
+  $config->set('secure_notes_types', update_variable_get('secure_notes_types', 'dynamic value in file /secure_notes/secure_notes.module line 367'));
+  $config->save();
+
+  update_variable_del('secure_notes_default_expiration');
+  update_variable_del('secure_notes_default_message_add');
+  update_variable_del('secure_notes_default_message_view');
+  update_variable_del('secure_notes_types');
 }

@@ -12,10 +12,10 @@
  * Generate a secure token.
  */
 function secure_notes_generate_token($time = REQUEST_TIME) {
-  $token = $time . drupal_get_hash_salt();
+  $token = $time . backdrop_get_hash_salt();
   // Hash the token 2^14 times.
   for ($i = 0; $i < pow(2, 14); $i++) {
-    $token = drupal_hmac_base64($token , drupal_random_bytes(10) . drupal_get_hash_salt());
+    $token = backdrop_hmac_base64($token, backdrop_random_bytes(10) . backdrop_get_hash_salt());
   }
   return $token;
 }
@@ -74,7 +74,7 @@ function secure_notes_add_link_invite($form, &$form_state) {
     '#title' => t('Email Message'),
     '#description' => t('The following email will be automatically send to the email address above. You may alter this message but make sure to include the [invite-token] somewhere in the message or else your invitation will not be useful at all.'),
     '#type' => 'textarea',
-    '#default_value' => check_plain(variable_get('secure_notes_default_message_add', $default_message)),
+    '#default_value' => check_plain(config_get('secure_notes.settings', 'secure_notes_default_message_add')),
     '#states' => array(
       'visible' => array(
         ':input[name="email_send"]' => array('checked' => TRUE),
@@ -153,7 +153,7 @@ function secure_notes_view_link_invite($form, &$form_state) {
     '#title' => t('Email Message'),
     '#description' => t('The following email will be automatically send to the email address above. You may alter this message but make sure to include the [invite-token] somewhere in the message or else your invitation will not be useful at all.'),
     '#type' => 'textarea',
-    '#default_value' => check_plain(variable_get('secure_notes_default_message_view', $default_message)),
+    '#default_value' => check_plain(config_get('secure_notes.settings', 'secure_notes_default_message_view')),
     '#states' => array(
       'visible' => array(
         ':input[name="email_send"]' => array('checked' => TRUE),
@@ -208,6 +208,7 @@ function secure_notes_invite_validate($form, &$form_state) {
  * @see secure_notes_add_link_invite()
  */
 function secure_notes_invite_submit($form, &$form_state) {
+  $config = config('secure_notes.settings');
   global $user;
   global $base_url;
   $type = $form_state['values']['type'];
@@ -216,8 +217,8 @@ function secure_notes_invite_submit($form, &$form_state) {
   $form_state['token'] = $token;
   $form_state['token_link'] = $token_link;
   $form_state['rebuild'] = TRUE;
-  $expires_hours = variable_get('secure_notes_default_expiration', 48);
-  $expires = REQUEST_TIME + $expires_hours * 60 *60;
+  $expires_hours = $config->get('secure_notes_default_expiration');
+  $expires = REQUEST_TIME + $expires_hours * 60 * 60;
 
   $fields = array(
     'token' => $token,
@@ -251,7 +252,7 @@ function secure_notes_invite_submit($form, &$form_state) {
     }
     else {
       $form_state['token'] = NULL;
-      drupal_set_message(t('You have just experienced a rare and amazing occurance. A cryptographic collision has occured! Do not fret, nothing was harmed. While this is really rare and interesting it just means that we need you to generate another token. Submit the form again to leave this strange paralell universe.'), 'error');
+      backdrop_set_message(t('You have just experienced a rare and amazing occurance. A cryptographic collision has occured! Do not fret, nothing was harmed. While this is really rare and interesting it just means that we need you to generate another token. Submit the form again to leave this strange paralell universe.'), 'error');
       return;
     }
   }
@@ -265,7 +266,7 @@ function secure_notes_invite_submit($form, &$form_state) {
     $module = 'secure_notes';
     // Specify 'to' and 'from' addresses.
     $to = $form_state['values']['email'];
-    $from = variable_get('site_mail', 'admin@example.com');
+    $from = config_get('system.performance', 'site_mail');
 
     // Load the message into params
     $params = array();
@@ -273,15 +274,15 @@ function secure_notes_invite_submit($form, &$form_state) {
     $language = language_default();
     $send = TRUE;
     // Send the mail, and check for success.
-    $result = drupal_mail('secure_notes', $key, $to, $language, $params, $from, $send);
+    $result = backdrop_mail('secure_notes', $key, $to, $language, $params, $from, $send);
     if ($result['result'] == TRUE) {
-      drupal_set_message(t('Your message has been sent to @to. Please review this email address is correct. If this was done in error, revoke the invitation.', array('@to' => $to)));
+      backdrop_set_message(t('Your message has been sent to @to. Please review this email address is correct. If this was done in error, revoke the invitation.', array('@to' => $to)));
     }
     else {
-      drupal_set_message(t('There was a problem sending your message and it was not sent.'), 'error');
+      backdrop_set_message(t('There was a problem sending your message and it was not sent.'), 'error');
     }
   }
-  drupal_set_message($status_message);
+  backdrop_set_message($status_message);
 }
 
 /**
@@ -298,19 +299,19 @@ function secure_notes_ajax_invite_submit($form, &$form_state) {
  * the standard node form onto this page.
  */
 function secure_notes_render_add_form($token) {
-  drupal_add_http_header('Cache-Control', 'no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0');
-  drupal_add_http_header('Expires', 'Sat, 02 Jan 1971 00:00:00 GMT');
+  backdrop_add_http_header('Cache-Control', 'no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0');
+  backdrop_add_http_header('Expires', 'Sat, 02 Jan 1971 00:00:00 GMT');
   $type = db_select('secure_notes_create', 'snc')
     ->fields('snc', array('type'))
     ->condition('token', $token, '=')
     ->execute()
     ->fetchField();
   if (!$type) {
-    drupal_access_denied();
+    backdrop_access_denied();
   }
   // Set page title.
   $types = node_type_get_types();
-  drupal_set_title(t('Create @name', array('@name' => $types[$type]->name)), PASS_THROUGH);
+  backdrop_set_title(t('Create @name', array('@name' => $types[$type]->name)), PASS_THROUGH);
 
   global $user;
   $node = (object) array(
@@ -321,20 +322,20 @@ function secure_notes_render_add_form($token) {
   );
   $form_state = array(
     'build_info' => array(
-      'args' => array($node)
+      'args' => array($node),
     ),
   );
   form_load_include($form_state, 'inc', 'node', 'node.pages');
-  $form = drupal_build_form($type . '_node_form', $form_state);
-  return drupal_render($form);
+  $form = backdrop_build_form($type . '_node_form', $form_state);
+  return backdrop_render($form);
 }
 
 /**
  * Load a node and display it to a token holder.
  */
 function secure_notes_render_node_view($token) {
-  drupal_add_http_header('Cache-Control', 'no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0');
-  drupal_add_http_header('Expires', 'Sat, 02 Jan 1971 00:00:00 GMT');
+  backdrop_add_http_header('Cache-Control', 'no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0');
+  backdrop_add_http_header('Expires', 'Sat, 02 Jan 1971 00:00:00 GMT');
   $nid = db_select('secure_notes_view', 'snv')
     ->fields('snv', array('nid'))
     ->condition('token', $token, '=')
@@ -343,7 +344,7 @@ function secure_notes_render_node_view($token) {
   $node = node_load($nid);
   $node->note_pickup = TRUE;
   $output = node_view($node);
-  drupal_set_title($node->title);
+  backdrop_set_title($node->title);
   $removable = array('links', '#contextual_links');
   foreach ($removable as $remove) {
     if (isset($output[$remove])) {
@@ -357,7 +358,7 @@ function secure_notes_render_node_view($token) {
       ->condition('snv.token', $token, '=')
       ->execute()
       ->fetchAssoc();
-  drupal_set_message(t('Your data is displayed for your records and your one time token has been used. The data will no longer be accessible. DO NOT refresh this page before you have stored the information safely. Remember this is sensitive data. Please store it appropriately.'), 'warning');
+  backdrop_set_message(t('Your data is displayed for your records and your one time token has been used. The data will no longer be accessible. DO NOT refresh this page before you have stored the information safely. Remember this is sensitive data. Please store it appropriately.'), 'warning');
   module_invoke_all('secure_notes_token_used', $token_data, $token_type, $node);
   return $output;
 }
@@ -407,20 +408,38 @@ function secure_notes_review($form, $form_state, $invitation_type, $nid = NULL) 
   // Build the sortable table header.
   $header = array();
   if ($invitation_type == 'add') {
-    $header['type'] = array('data' => t('Type'), 'field' => 't.type');
+    $header['type'] = array(
+      'data' => t('Type'),
+      'field' => 't.type',
+    );
     $abrv = 'a';
   }
   if ($invitation_type == 'view') {
     if (!$nid) {
-      $header['title'] = array('data' => t('Title'), 'field' => 'n.title');
+      $header['title'] = array(
+        'data' => t('Title'),
+        'field' => 'n.title',
+      );
     }
     $abrv = 'v';
   }
   $header = $header + array(
-    'email' => array('data' => t('Email'), 'field' => 't.email'),
-    'generator' => array('data' => t('Invited By'), 'field' => 't.uid'),
-    'token' => array('data' => t('Token'), 'field' => 't.token'),
-    'expires' => array('data' => t('Expires'), 'field' => 't.expires'),
+    'email' => array(
+      'data' => t('Email'),
+      'field' => 't.email',
+    ),
+    'generator' => array(
+      'data' => t('Invited By'),
+      'field' => 't.uid',
+    ),
+    'token' => array(
+      'data' => t('Token'),
+      'field' => 't.token',
+    ),
+    'expires' => array(
+      'data' => t('Expires'),
+      'field' => 't.expires',
+    ),
     'operations' => t('Operations'),
   );
 
@@ -437,7 +456,7 @@ function secure_notes_review($form, $form_state, $invitation_type, $nid = NULL) 
   }
   $tokens = $query->limit(50)->orderByHeader($header)->execute();
 
-  $destination = drupal_get_destination();
+  $destination = backdrop_get_destination();
 
   $options = array();
   while ($token = $tokens->fetchAssoc()) {
@@ -450,7 +469,7 @@ function secure_notes_review($form, $form_state, $invitation_type, $nid = NULL) 
       $options[$token['token']]['title'] = l($node->title, 'node/' . $node->nid);
     }
     $options[$token['token']] = $options[$token['token']] + array(
-      'email' => isset($token['email']) ? check_plain($token['email']) : '',
+      'email' => isset($token['email'])?check_plain($token['email']) : '',
       'generator' => theme('username', array('account' => user_load($token['uid']))),
       'token' => $token['token'],
       'expires' => format_date($token['expires'], 'short'),
@@ -503,11 +522,17 @@ function secure_notes_delete_confirm($form, &$form_state, $type, $tokens) {
   else {
     $tokens = array_filter($tokens);
   }
-  $form['secure-notes-type'] = array('#type' => 'value', '#value' => $type);
-  $form['secure-notes-tokens'] = array('#type' => 'value', '#value' => $tokens);
+  $form['secure-notes-type'] = array(
+    '#type' => 'value',
+    '#value' => $type,
+  );
+  $form['secure-notes-tokens'] = array(
+    '#type' => 'value',
+    '#value' => $tokens,
+  );
 
   $question = format_plural(count($tokens), 'Are you sure you want to delete this token?', 'Are you sure you want to delete these tokens?');
-  $destination = drupal_get_destination();
+  $destination = backdrop_get_destination();
 
   return confirm_form(
     $form,
@@ -531,7 +556,7 @@ function secure_notes_delete_confirm_submit($form, &$form_state) {
     secure_notes_token_delete($type, $tokens);
     $count = count($tokens);
     watchdog('secure notes', 'Deleted @count secure notes tokens.', array('@count' => $count));
-    drupal_set_message(format_plural($count, 'Deleted 1 secure notes token.', 'Deleted @count secure notes tokens.'));
+    backdrop_set_message(format_plural($count, 'Deleted 1 secure notes token.', 'Deleted @count secure notes tokens.'));
   }
 }
 

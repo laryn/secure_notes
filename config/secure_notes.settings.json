@@ -1,0 +1,7 @@
+{
+    "_config_name": "secure_notes.settings",
+    "secure_notes_default_expiration": "48",
+    "secure_notes_default_message_add": "dynamic value in file /secure_notes/secure_notes.pages.inc line 77",
+    "secure_notes_default_message_view": "dynamic value in file /secure_notes/secure_notes.pages.inc line 156",
+    "secure_notes_types": "dynamic value in file /secure_notes/secure_notes.module line 367"
+}

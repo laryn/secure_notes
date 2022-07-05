@@ -1,5 +1,6 @@
 name = Secure Notes Auto Delete
 description = Cleans up retreived secure notes so that they don't languish in your database.
-core = 7.x
+backdrop = 1.x
+type = module
 package = other
 dependencies[] = secure_notes

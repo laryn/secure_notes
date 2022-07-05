@@ -19,13 +19,13 @@ function secure_notes_autodelete_node_view($node, $view_mode, $langcode) {
     $marked = secure_notes_autodelete_marked($node);
     if ($dropoff && !$marked) {
       $node->content['secure_notes_pickup'] = array(
-        'form' => drupal_get_form('secure_notes_autodelete_pickup_confirm_form_' . $node->nid, $node->nid),
+        'form' => backdrop_get_form('secure_notes_autodelete_pickup_confirm_form_' . $node->nid, $node->nid),
         '#weight' => 10,
       );
     }
     elseif ($marked > 0 && $dropoff && $view_mode == 'full') {
       $username = user_load($marked)->name;
-      $messages = drupal_get_messages('status', FALSE);
+      $messages = backdrop_get_messages('status', FALSE);
       $messages = isset($messages['status']) ? $messages['status'] : array();
       $set = FALSE;
       foreach ($messages as $message) {
@@ -34,7 +34,7 @@ function secure_notes_autodelete_node_view($node, $view_mode, $langcode) {
         }
       }
       if (!$set) {
-        drupal_set_message(t('This node has been marked for deletion by user %username. It will be automaticially removed on the next cron run.', array('%username' => $username)), 'warning');
+        backdrop_set_message(t('This node has been marked for deletion by user %username. It will be automaticially removed on the next cron run.', array('%username' => $username)), 'warning');
       }
     }
   }
@@ -83,15 +83,18 @@ function secure_notes_autodelete_pickup_confirm_form($form, $form_state, $nid) {
  */
 function secure_notes_autodelete_pickup_confirm_form_submit($form, $form_state) {
   global $user;
-  $entry = array('nid' => $form_state['values']['pickup_nid'], 'uid' => $user->uid);
+  $entry = array(
+    'nid' => $form_state['values']['pickup_nid'],
+    'uid' => $user->uid,
+  );
   $title = db_query('SELECT title FROM {node} WHERE nid = :nid', array(':nid' => $form_state['values']['pickup_nid']))->fetchField();
   try {
-    drupal_write_record('secure_notes_autodelete', $entry);
-    drupal_set_message(t('The secure note %title has been marked as "picked up" and is scheduled for deletion.', array('%title' => $title)), 'status');
+    backdrop_write_record('secure_notes_autodelete', $entry);
+    backdrop_set_message(t('The secure note %title has been marked as "picked up" and is scheduled for deletion.', array('%title' => $title)), 'status');
   }
   catch (PDOException $e) {
     if ($e->getCode() == 23000) {
-      drupal_set_message(t('This node is already marked as picked up. No need to remark it.'), 'warning');
+      backdrop_set_message(t('This node is already marked as picked up. No need to remark it.'), 'warning');
     }
   }
 }
@@ -137,13 +140,16 @@ function secure_notes_autodelete_secure_notes_token_used($token_data, $token_typ
         array(':nid' => $node->nid, ':token' => $token_data['token']))
         ->fetchField();
       if ($tokens_left === FALSE) {
-        $entry = array('nid' => $node->nid, 'uid' => 0);
-        drupal_write_record('secure_notes_autodelete', $entry);
+        $entry = array(
+          'nid' => $node->nid,
+          'uid' => 0,
+        );
+        backdrop_write_record('secure_notes_autodelete', $entry);
       }
       break;
     case 'create':
       $entry = array('nid' => $node->nid);
-      drupal_write_record('secure_notes_dropoff', $entry);
+      backdrop_write_record('secure_notes_dropoff', $entry);
       break;
   }
 }

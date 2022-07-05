@@ -27,7 +27,7 @@ function secure_notes_autodelete_schema() {
     ),
     'primary key' => array('nid'),
     'indexes' => array(
-      'nid'    => array('nid'),
+      'nid' => array('nid'),
     ),
   );
 
@@ -42,7 +42,7 @@ function secure_notes_autodelete_schema() {
     ),
     'primary key' => array('nid'),
     'indexes' => array(
-      'nid'    => array('nid'),
+      'nid' => array('nid'),
     ),
   );
 

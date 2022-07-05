@@ -4,7 +4,7 @@
  * @file
  * Secure Notes module provides functionality to securly share sensitive
  * information. Hooks function definitions for secure notes to interact with
- * drupal and common functions.
+ * backdrop and common functions.
  */
 
 /**
@@ -15,7 +15,7 @@ function secure_notes_menu() {
   $items['admin/config/content/secure-notes'] = array(
     'title' => 'Secure Notes Settings',
     'description' => 'Administer Secure Notes Settings.',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('secure_notes_admin_settings_form'),
     'access arguments' => array('secure notes manage settings'),
     'file' => 'secure_notes.admin.inc',
@@ -44,7 +44,7 @@ function secure_notes_menu() {
     'title' => 'Generate Secure Note Add Link',
     'description' => 'Generate a one time use link for the creation of a note.',
     'weight' => 1,
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('secure_notes_add_link_invite'),
     'access arguments' => array('secure notes invite add'),
     'file' => 'secure_notes.pages.inc',
@@ -53,7 +53,7 @@ function secure_notes_menu() {
     'title' => 'Secure Note Invitation',
     'type' => MENU_LOCAL_TASK,
     'description' => 'Generate a one time use link that can be used to view this node.',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('secure_notes_view_link_invite'),
     'access callback' => 'secure_notes_node_invite_access',
     'access arguments' => array(1, 'secure notes invite view'),
@@ -63,7 +63,7 @@ function secure_notes_menu() {
     'title' => 'Review Secure Note Invitations',
     'type' => MENU_LOCAL_TASK,
     'description' => 'Review secure note invitations for this node.',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('secure_notes_review', 'view', 1),
     'access callback' => 'secure_notes_review_access',
     'access arguments' => array('view', NULL, 1),
@@ -77,12 +77,12 @@ function secure_notes_menu() {
     'access arguments' => array('any'),
     'page callback' => 'system_admin_menu_block_page',
     'file' => 'system.admin.inc',
-    'file path' => drupal_get_path('module', 'system'),
+    'file path' => backdrop_get_path('module', 'system'),
   );
   $items['admin/content/secure-notes/review/add'] = array(
     'title' => 'Review Secure Note Creation Invitations',
     'description' => 'Review secure note creation invitations.',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('secure_notes_review', 'add'),
     'access callback' => 'secure_notes_review_access',
     'access arguments' => array('add'),
@@ -91,7 +91,7 @@ function secure_notes_menu() {
   $items['admin/content/secure-notes/review/view'] = array(
     'title' => 'Review Secure Note View Invitations',
     'description' => 'Review secure note creation invitations.',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('secure_notes_review', 'view'),
     'access callback' => 'secure_notes_review_access',
     'access arguments' => array('view'),
@@ -99,7 +99,7 @@ function secure_notes_menu() {
   );
   $items['secure-notes/%/%/delete'] = array(
     'title' => 'Delete',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('secure_notes_delete_confirm', 1, 2),
     'access callback' => 'secure_notes_review_access',
     'access arguments' => array(NULL, 1),
@@ -162,12 +162,16 @@ function secure_notes_permission() {
 /*
  * Implementation of hook_help().
  */
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function secure_notes_help($path, $arg) {
   $output = '';
   switch ($path) {
     case 'admin/help#secure-notes':
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('Secure notes module was designed to solve the problem of transfering sensitive data between people. While there are many good solutons for this (PGP, SSH, TrueCrypt, etc) it is often the case that one or more of the parties are non-technical or unable to install new software. In this case, it is possible to allow transfer of this data by storing it in Drupal.') . '</p>';
+      $output .= '<p>' . t('Secure notes module was designed to solve the problem of transfering sensitive data between people. While there are many good solutons for this (PGP, SSH, TrueCrypt, etc) it is often the case that one or more of the parties are non-technical or unable to install new software. In this case, it is possible to allow transfer of this data by storing it in Backdrop.') . '</p>';
       $output .= '<h3>' . t('Uses') . '</h3>';
       $output .= '<p>' . t('Secure notes allows any content type to be made into a secure drop point. To authorize a user to create a secure not, generate a token and email it to them. This is very similar to the way users can reset a password. The one time link will allow them to create a node even though they do not have access to the site in any other way.') . '</p>';
       $output .= '<p>' . t('If you need to send a secure not to someone, generate a similar one-time use access link and they can then view a specified piece of content, once and only once.') . '</p>';
@@ -260,7 +264,7 @@ function secure_notes_token_valid($token, $token_type) {
       ->fetchObject();
     $access = ($result && (int) $result->expires > REQUEST_TIME && secure_notes_type_enabled($result->type));
     if (!$access) {
-      drupal_set_message(t('The token you supplied is either invalid, has expired, or already been used. Please check that the url matches the one that was given to you.'), 'error');
+      backdrop_set_message(t('The token you supplied is either invalid, has expired, or already been used. Please check that the url matches the one that was given to you.'), 'error');
     }
   }
   elseif ($token_type == 'view') {
@@ -271,7 +275,7 @@ function secure_notes_token_valid($token, $token_type) {
       ->fetchObject();
     $access = $result && (int) $result->expires > REQUEST_TIME;
     if (!$access) {
-      drupal_set_message(t('The token you supplied is either invalid, has expired, or already been used. Please check that the url matches the one that was given to you.'), 'error');
+      backdrop_set_message(t('The token you supplied is either invalid, has expired, or already been used. Please check that the url matches the one that was given to you.'), 'error');
     }
   }
   return $access;
@@ -324,10 +328,10 @@ function secure_notes_review_access($invitation_type = NULL, $abrv = NULL, $nid 
     if ($invitation_type == 'add' && user_access('secure notes manage add invitations', $user)) {
       $access = TRUE;
     }
-    if ($invitation_type == 'view' &&  user_access('secure notes manage view invitations', $user)) {
+    if ($invitation_type == 'view' &&   user_access('secure notes manage view invitations', $user)) {
       $access = TRUE;
     }
-    if ($invitation_type == 'any' &&  (user_access('secure notes manage view invitations', $user) || user_access('secure notes manage add invitations', $user))) {
+    if ($invitation_type == 'any' &&   (user_access('secure notes manage view invitations', $user) || user_access('secure notes manage add invitations', $user))) {
       $access = TRUE;
     }
   }
@@ -351,6 +355,17 @@ function secure_notes_type_enabled($type) {
 }
 
 /**
+ * Implements hook_config_info().
+ */
+function secure_notes_config_info() {
+  $prefixes['secure_notes.settings'] = array(
+    'label' => t('Secure Notes settings'),
+    'group' => t('Configuration'),
+  );
+  return $prefixes;
+}
+
+/**
  * Helper function used to get a list of node types that support secure notes.
  *
  * @return an associative array that denotes the secure note node types.
@@ -363,8 +378,8 @@ function secure_notes_type_enabled($type) {
  *     'article' => 'article'
  */
 function secure_notes_get_types() {
-  $default = in_array('secure_note', array_keys(node_type_get_names()), TRUE) ? array('secure_note' => 'secure_note') : array();
-  return variable_get('secure_notes_types', $default);
+  $default = in_array('secure_note', array_keys(node_type_get_names()), TRUE)?array('secure_note' => 'secure_note') : array();
+  return config_get('secure_notes.settings', 'secure_notes_types');
 }
 
 /**
@@ -476,6 +491,7 @@ function secure_notes_token_delete($type, $tokens) {
  * a user.
  */
 function secure_notes_mail($key, &$message, $params) {
+  $config = config('secure_notes.settings');
   global $user;
   global $base_url;
 
@@ -485,12 +501,12 @@ function secure_notes_mail($key, &$message, $params) {
 
   switch ($key) {
     case 'secure_notes_view':
-      $message['subject'] = t('Secure note pickup from @site-name (@url)', array('@site-name' => variable_get('site_name', 'Drupal'), '@url' => $base_url), $options);
+      $message['subject'] = t('Secure note pickup from @site-name (@url)', array('@site-name' => config_get('system.performance', 'site_name'), '@url' => $base_url), $options);
       $message['body'][] = check_plain($params['message']);
       break;
 
     case 'secure_notes_add':
-      $message['subject'] = t('Secure note invitation from @site-name (@url)', array('@site-name' => variable_get('site_name', 'Drupal'), '@url' => $base_url), $options);
+      $message['subject'] = t('Secure note invitation from @site-name (@url)', array('@site-name' => config_get('system.performance', 'site_name'), '@url' => $base_url), $options);
       $message['body'][] = check_plain($params['message']);
       break;
 
@@ -562,7 +578,7 @@ function secure_notes_node_type_delete($info) {
   if (isset($types[$info->type])) {
     unset($types[$info->type]);
   }
-  variable_set('secure_notes_types', $types);
+  config_set('secure_notes.settings', 'secure_notes_types', $types);
 }
 
 /**
@@ -583,7 +599,7 @@ function secure_notes_secure_notes_token_used($token, $type, $node) {
   $account = user_load($token['uid']);
   $to = $account->mail;
   $sent_to = !empty($token['email']) ? $token['email'] : t('an unknown user');
-  $from = variable_get('site_mail', 'admin@example.com');
+  $from = config_get('system.performance', 'site_mail');
   $send = TRUE;
   $params = array();
   if ($type == 'create') {
@@ -592,9 +608,9 @@ function secure_notes_secure_notes_token_used($token, $type, $node) {
     // Load the message into params
     $params['message'] = $message;
     $language = language_default();
-    $result = drupal_mail('secure_notes', 'secure_notes_token_response', $to, $language, $params, $from, $send);
+    $result = backdrop_mail('secure_notes', 'secure_notes_token_response', $to, $language, $params, $from, $send);
     if ($result['result'] == TRUE) {
-      drupal_set_message(t('Your note has been saved and your inviter has been been alerted by email.'));
+      backdrop_set_message(t('Your note has been saved and your inviter has been been alerted by email.'));
     }
   }
   elseif ($type == 'view') {
@@ -602,9 +618,9 @@ function secure_notes_secure_notes_token_used($token, $type, $node) {
     // Load the message into params
     $params['message'] = $message;
     $language = language_default();
-    $result = drupal_mail('secure_notes', 'secure_notes_token_response', $to, $language, $params, $from, $send);
+    $result = backdrop_mail('secure_notes', 'secure_notes_token_response', $to, $language, $params, $from, $send);
     if ($result['result'] == TRUE) {
-      drupal_set_message(t('We are happy you were able to pick up this data. Your inviter has been been alerted by email that you have receieved the message.'));
+      backdrop_set_message(t('We are happy you were able to pick up this data. Your inviter has been been alerted by email that you have receieved the message.'));
     }
   }
 }
