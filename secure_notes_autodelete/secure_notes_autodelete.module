@@ -169,6 +169,6 @@ function secure_notes_autodelete_cron() {
     db_delete('secure_notes_dropoff')
       ->condition('nid', $nids, 'IN')
       ->execute();
-    watchdog('secure notes autodelete', 'Automatically deleted retreived secure notes on cron run. Nodes with the following nids were deleted: %nids', array('%nids' => implode($nids, ', ')));
+    watchdog('secure notes autodelete', 'Automatically deleted retrieved secure notes on cron run. Nodes with the following nids were deleted: %nids', array('%nids' => implode($nids, ', ')));
   }
 }

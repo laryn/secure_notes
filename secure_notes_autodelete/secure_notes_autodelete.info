@@ -1,5 +1,5 @@
 name = Secure Notes Auto Delete
-description = Cleans up retreived secure notes so that they don't languish in your database.
+description = Cleans up retrieved secure notes so that they don't languish in your database.
 backdrop = 1.x
 type = module
 package = other
