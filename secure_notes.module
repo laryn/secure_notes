@@ -13,8 +13,8 @@
 function secure_notes_menu() {
   $items = array();
   $items['admin/config/content/secure-notes'] = array(
-    'title' => 'Secure Notes Settings',
-    'description' => 'Administer Secure Notes Settings.',
+    'title' => 'Secure notes',
+    'description' => 'Administer secure notes settings.',
     'page callback' => 'backdrop_get_form',
     'page arguments' => array('secure_notes_admin_settings_form'),
     'access arguments' => array('secure notes manage settings'),
@@ -41,8 +41,8 @@ function secure_notes_menu() {
     'file' => 'secure_notes.pages.inc',
   );
   $items['admin/content/secure-notes/invite/add'] = array(
-    'title' => 'Generate Secure Note Add Link',
-    'description' => 'Generate a one time use link for the creation of a note.',
+    'title' => 'Generate an add link for secure notes',
+    'description' => 'Generate a one time use link for the creation of a secure note.',
     'weight' => 1,
     'page callback' => 'backdrop_get_form',
     'page arguments' => array('secure_notes_add_link_invite'),
@@ -50,9 +50,9 @@ function secure_notes_menu() {
     'file' => 'secure_notes.pages.inc',
   );
   $items['node/%/secure-notes/invite'] = array(
-    'title' => 'Secure Note Invitation',
+    'title' => 'Generate a secure note invitation',
     'type' => MENU_LOCAL_TASK,
-    'description' => 'Generate a one time use link that can be used to view this node.',
+    'description' => 'Generate a one-time use link that can be used to view this node.',
     'page callback' => 'backdrop_get_form',
     'page arguments' => array('secure_notes_view_link_invite'),
     'access callback' => 'secure_notes_node_invite_access',
@@ -60,7 +60,7 @@ function secure_notes_menu() {
     'file' => 'secure_notes.pages.inc',
   );
   $items['node/%/secure-notes/review'] = array(
-    'title' => 'Review Secure Note Invitations',
+    'title' => 'Review secure note invitations',
     'type' => MENU_LOCAL_TASK,
     'description' => 'Review secure note invitations for this node.',
     'page callback' => 'backdrop_get_form',
@@ -70,7 +70,7 @@ function secure_notes_menu() {
     'file' => 'secure_notes.pages.inc',
   );
   $items['admin/content/secure-notes'] = array(
-    'title' => 'Secure Notes',
+    'title' => 'Secure notes',
     'description' => 'Review secure note invitations.',
     'page callback' => 'secure_notes_manage',
     'access callback' => 'secure_notes_review_access',
@@ -80,8 +80,8 @@ function secure_notes_menu() {
     'file path' => backdrop_get_path('module', 'system'),
   );
   $items['admin/content/secure-notes/review/add'] = array(
-    'title' => 'Review Secure Note Creation Invitations',
-    'description' => 'Review secure note creation invitations.',
+    'title' => 'Review secure note creation invitations',
+    'description' => 'Review invitations to create secure notes.',
     'page callback' => 'backdrop_get_form',
     'page arguments' => array('secure_notes_review', 'add'),
     'access callback' => 'secure_notes_review_access',
@@ -89,8 +89,8 @@ function secure_notes_menu() {
     'file' => 'secure_notes.pages.inc',
   );
   $items['admin/content/secure-notes/review/view'] = array(
-    'title' => 'Review Secure Note View Invitations',
-    'description' => 'Review secure note creation invitations.',
+    'title' => 'Review secure note view invitations',
+    'description' => 'Review invitations to view secure notes.',
     'page callback' => 'backdrop_get_form',
     'page arguments' => array('secure_notes_review', 'view'),
     'access callback' => 'secure_notes_review_access',
@@ -157,26 +157,6 @@ function secure_notes_permission() {
       'restrict access' => TRUE,
     ),
   );
-}
-
-/*
- * Implementation of hook_help().
- */
-/**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
- */
-function secure_notes_help($path, $arg) {
-  $output = '';
-  switch ($path) {
-    case 'admin/help#secure-notes':
-      $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('Secure notes module was designed to solve the problem of transfering sensitive data between people. While there are many good solutons for this (PGP, SSH, TrueCrypt, etc) it is often the case that one or more of the parties are non-technical or unable to install new software. In this case, it is possible to allow transfer of this data by storing it in Backdrop.') . '</p>';
-      $output .= '<h3>' . t('Uses') . '</h3>';
-      $output .= '<p>' . t('Secure notes allows any content type to be made into a secure drop point. To authorize a user to create a secure not, generate a token and email it to them. This is very similar to the way users can reset a password. The one time link will allow them to create a node even though they do not have access to the site in any other way.') . '</p>';
-      $output .= '<p>' . t('If you need to send a secure not to someone, generate a similar one-time use access link and they can then view a specified piece of content, once and only once.') . '</p>';
-  }
-  return $output;
 }
 
 /**
@@ -263,9 +243,6 @@ function secure_notes_token_valid($token, $token_type) {
       ->execute()
       ->fetchObject();
     $access = ($result && (int) $result->expires > REQUEST_TIME && secure_notes_type_enabled($result->type));
-    if (!$access) {
-      backdrop_set_message(t('The token you supplied is either invalid, has expired, or already been used. Please check that the url matches the one that was given to you.'), 'error');
-    }
   }
   elseif ($token_type == 'view') {
     $result = db_select('secure_notes_view', 'snv')
@@ -274,10 +251,11 @@ function secure_notes_token_valid($token, $token_type) {
       ->execute()
       ->fetchObject();
     $access = $result && (int) $result->expires > REQUEST_TIME;
-    if (!$access) {
-      backdrop_set_message(t('The token you supplied is either invalid, has expired, or already been used. Please check that the url matches the one that was given to you.'), 'error');
-    }
   }
+  if (!$access) {
+    backdrop_set_message(t('The token you supplied is either invalid, has expired, or already been used. Please check that the url matches the one that was given to you.'), 'error');
+  }
+
   return $access;
 }
 
@@ -359,7 +337,7 @@ function secure_notes_type_enabled($type) {
  */
 function secure_notes_config_info() {
   $prefixes['secure_notes.settings'] = array(
-    'label' => t('Secure Notes settings'),
+    'label' => t('Secure notes settings'),
     'group' => t('Configuration'),
   );
   return $prefixes;
@@ -378,7 +356,7 @@ function secure_notes_config_info() {
  *     'article' => 'article'
  */
 function secure_notes_get_types() {
-  $default = in_array('secure_note', array_keys(node_type_get_names()), TRUE)?array('secure_note' => 'secure_note') : array();
+  $default = in_array('secure_note', array_keys(node_type_get_names()), TRUE) ? array('secure_note' => 'secure_note') : array();
   return config_get('secure_notes.settings', 'secure_notes_types');
 }
 
@@ -599,7 +577,7 @@ function secure_notes_secure_notes_token_used($token, $type, $node) {
   $account = user_load($token['uid']);
   $to = $account->mail;
   $sent_to = !empty($token['email']) ? $token['email'] : t('an unknown user');
-  $from = config_get('system.performance', 'site_mail');
+  $from = config_get('system.core', 'site_mail');
   $send = TRUE;
   $params = array();
   if ($type == 'create') {

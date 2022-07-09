@@ -400,7 +400,7 @@ function secure_notes_review($form, $form_state, $invitation_type, $nid = NULL) 
   // Otherwise build out the normal administration form.
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Delete Selected'),
+    '#value' => t('Delete selected'),
     '#validate' => array('secure_notes_manage_validate'),
     '#submit' => array('secure_notes_manage_submit'),
   );
@@ -429,7 +429,7 @@ function secure_notes_review($form, $form_state, $invitation_type, $nid = NULL) 
       'field' => 't.email',
     ),
     'generator' => array(
-      'data' => t('Invited By'),
+      'data' => t('Invited by'),
       'field' => 't.uid',
     ),
     'token' => array(

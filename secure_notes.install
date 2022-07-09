@@ -99,7 +99,7 @@ function secure_notes_install() {
 
   $type = array(
     'type' => 'secure_note',
-    'name' => st('Secure Note'),
+    'name' => st('Secure note'),
     'base' => 'node_content',
     'description' => st('Content meant to be a secure exchange between a user of the site and a non-user of the site.'),
     'custom' => TRUE,
@@ -120,21 +120,6 @@ function secure_notes_install() {
     // TODO This variable was probably removed in Backdrop without replacement.
     variable_set($option . '_secure_note', $value);
   }
-  // Dynamically generated variable data was detected on the following lines.
-  // /secure_notes/secure_notes.pages.inc line 77
-  // /secure_notes/secure_notes.pages.inc line 156
-  // /secure_notes/secure_notes.module line 367
-}
-
-/**
- * Implements hook_uninstall().
- *
- * Remove variables and data.
- */
-function secure_notes_uninstall() {
-  // We don't clean up the secure notes node variables because the content type
-  // may persist even after the module is removed.
-  config_clear('secure_notes.settings', 'secure_notes_types');
 }
 
 /**
@@ -142,10 +127,10 @@ function secure_notes_uninstall() {
  */
 function secure_notes_update_1000() {
   $config = config('secure_notes.settings');
-  $config->set('secure_notes_default_expiration', update_variable_get('secure_notes_default_expiration', '48'));
-  $config->set('secure_notes_default_message_add', update_variable_get('secure_notes_default_message_add', 'dynamic value in file /secure_notes/secure_notes.pages.inc line 77'));
-  $config->set('secure_notes_default_message_view', update_variable_get('secure_notes_default_message_view', 'dynamic value in file /secure_notes/secure_notes.pages.inc line 156'));
-  $config->set('secure_notes_types', update_variable_get('secure_notes_types', 'dynamic value in file /secure_notes/secure_notes.module line 367'));
+  $config->set('secure_notes_default_expiration', update_variable_get('secure_notes_default_expiration', '168'));
+  $config->set('secure_notes_default_message_add', update_variable_get('secure_notes_default_message_add', '[username] has invited you to securely share information. Please use the link below to drop off the information on our secure site. If you do not know this user or this message has been received in error, then do not click this link. Otherwise click the link and follow the directions on the page to safely share your data. You will only be allowed to use this link once: [invite-token]'));
+  $config->set('secure_notes_default_message_view', update_variable_get('secure_notes_default_message_view', '[username] wants to securely share information with you. Please use the link to view the information. If you do not know this user or this message has been received in error, then do not click this link. Otherwise click the link and follow the directions on the page to safely retrieve the data. You will only be allowed to use this link once: [invite-token]'));
+  $config->set('secure_notes_types', update_variable_get('secure_notes_types', array('secure_note' => 'secure_note')));
   $config->save();
 
   update_variable_del('secure_notes_default_expiration');
